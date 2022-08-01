@@ -36,8 +36,8 @@ $ python -m pip install requests
 
 ## :camera_flash: Program screenshots
 <div align="center">
-    <img height="765px" src="https://user-images.githubusercontent.com/19619206/182129371-f943fecb-f86d-4903-a065-c66a6f5b3eda.png" />
-    <img height="765px" src="https://user-images.githubusercontent.com/19619206/182129485-9ebe85fc-cb13-4847-85f9-455eae6aed9d.png" />
+    <img height="700px" src="https://user-images.githubusercontent.com/19619206/182129371-f943fecb-f86d-4903-a065-c66a6f5b3eda.png" />
+    <img height="700px" src="https://user-images.githubusercontent.com/19619206/182129485-9ebe85fc-cb13-4847-85f9-455eae6aed9d.png" />
     <br /><i>Screenshots taken from two different units depicting the pending queue and recently approved achievements</i>
 </div>
 
