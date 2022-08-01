@@ -31,6 +31,7 @@ with open("credentials.json") as fp:
     TERRAIN_PASSWORD = raw["terrain_password"]
     JANDI_WEBHOOK = raw["jandi_webhook"]
 
+
 # Main function
 def main():
     """
@@ -63,14 +64,14 @@ def main():
     for index, item in enumerate(raw_pending):
         if index == 0 or item["member"]["id"] != raw_pending[index - 1]["member"]["id"]:
             pending.append([])
-        
+
         pending[-1].append(item)
 
     # Split approved queue
     for index, item in enumerate(raw_recent):
         if index == 0 or item["member"]["id"] != raw_recent[index - 1]["member"]["id"]:
             recent.append([])
-        
+
         recent[-1].append(item)
 
     # Pending approvals
@@ -90,9 +91,9 @@ def main():
         for approval in member_events:
             connect["description"] += get_achievement_meta(sess, approval)
             connect["description"] += "\n"
-        
+
         embed["connectInfo"].append(connect)
-    
+
     empty = [{"description": "No pending approvals"}]
     embed["connectInfo"] = embed["connectInfo"] or empty
     send_jandi_webhook(JANDI_WEBHOOK, embed)
@@ -114,9 +115,9 @@ def main():
         for approval in member_events:
             connect["description"] += get_achievement_meta(sess, approval)
             connect["description"] += "\n"
-        
+
         embed["connectInfo"].append(connect)
-    
+
     empty = [{"description": "No recent approvals"}]
     embed["connectInfo"] = embed["connectInfo"] or empty
     send_jandi_webhook(JANDI_WEBHOOK, embed)
@@ -152,33 +153,33 @@ def get_achievement_meta(sess: requests.Session, event: dict) -> str:
     """
 
     achievements = {
-        "intro_scouting" : "⚜️ Introduction to Scouting",
-        "intro_section" : "🗣️ Introduction to Section",
-        "course_reflection" : "📚 Personal Development Course",
-        "adventurous_journey" : "🚀 Adventurous Journey",
-        "personal_reflection" : "📐 Personal Reflection",
-        "peak_award" : "⭐ Peak Award",
+        "intro_scouting": "⚜️ Introduction to Scouting",
+        "intro_section": "🗣️ Introduction to Section",
+        "course_reflection": "📚 Personal Development Course",
+        "adventurous_journey": "🚀 Adventurous Journey",
+        "personal_reflection": "📐 Personal Reflection",
+        "peak_award": "⭐ Peak Award",
     }
 
     oas_emoji = {
-        "alpine" : "❄️",
-        "aquatics" : "🏊",
-        "boating" : "⛵",
-        "bushcraft" : "🏞️",
-        "bushwalking" : "🥾",
-        "camping" : "⛺",
-        "cycling" : "🚲" ,
-        "paddling" : "🛶",
-        "vertical" : "🧗",
+        "alpine": "❄️",
+        "aquatics": "🏊",
+        "boating": "⛵",
+        "bushcraft": "🏞️",
+        "bushwalking": "🥾",
+        "camping": "⛺",
+        "cycling": "🚲",
+        "paddling": "🛶",
+        "vertical": "🧗",
     }
 
     sia = {
-        "sia_adventure_sport" : "🏈 Adventure & Sport",
-        "sia_art_literature" : "🎭 Arts & Literature",
-        "sia_better_world" : "🌏 Creating a Better World",
-        "sia_environment" : "♻️ Environment",
-        "sia_growth_development" : "🌱 Growth & Development",
-        "sia_stem_innovation" : "🔎 STEM & Innovation",
+        "sia_adventure_sport": "🏈 Adventure & Sport",
+        "sia_art_literature": "🎭 Arts & Literature",
+        "sia_better_world": "🌏 Creating a Better World",
+        "sia_environment": "♻️ Environment",
+        "sia_growth_development": "🌱 Growth & Development",
+        "sia_stem_innovation": "🔎 STEM & Innovation",
     }
 
     expand = lambda item: item.replace("_", " ").capitalize()
@@ -187,7 +188,7 @@ def get_achievement_meta(sess: requests.Session, event: dict) -> str:
     # Find OAS branch and level
     if not result and event["achievement"]["type"] == "outdoor_adventure_skill":
         past = get_member_achievements(sess, event["member"]["id"])
-        
+
         for item in past:
             if item["id"] == event["achievement"]["id"]:
                 meta = item["achievement_meta"]
@@ -205,19 +206,18 @@ def get_achievement_meta(sess: requests.Session, event: dict) -> str:
                 selection = sia.get(item["answers"]["special_interest_area_selection"], "Unknown")
                 name = item["answers"].get("project_name", "Unnamed project").strip()
                 event_type = event["submission"]["type"]
-                
+
                 result = f"{selection} SIA - {name} ({event_type})"
 
     # Find milestone level
     if not result and event["achievement"]["type"] == "milestone":
         past = get_member_achievements(sess, event["member"]["id"])
-        
+
         for item in past:
             if item["id"] == event["achievement"]["id"]:
                 meta = item["achievement_meta"]
 
                 result = "👣 Milestone " + str(meta["stage"])
-
 
     return result or expand(event["achievement"]["type"])
 
@@ -227,7 +227,7 @@ def get_member_achievements(sess: requests.Session, member: str) -> list:
         Given a member ID, returns that member's achievements as fetched from Terrain.
         Function results are cached to prevent unnessecary API calls.
     """
-    
+
     url = f"https://achievements.terrain.scouts.com.au/members/{member}/achievements"
     data = sess.get(url).json()["results"]
 
@@ -238,7 +238,7 @@ def send_jandi_webhook(url: str, body: dict) -> requests.Response:
     """
         Accepts parameter `body` as json data to send to the JANDI url
     """
-    
+
     headers = {
         "Accept": "application/vnd.tosslab.jandi-v2+json",
         "Content-Type": "application/json",
@@ -267,7 +267,7 @@ def generate_session() -> requests.Session:
         "AuthParameters": {
             "USERNAME": TERRAIN_USERNAME,
             "PASSWORD": TERRAIN_PASSWORD,
-        }
+        },
     }
 
     headers = {
@@ -318,7 +318,7 @@ def create_task(schedule: sched.scheduler, wait: bool = False):
     # Schedule next run
     schedule.enterabs(target.timestamp(), 1, create_task, (schedule,))
     print("Scheduling next run for", target)
-    
+
     # The wait flag is only set if this function has not been called
     # recursively and as such the first run may be premature so it
     # is skipped
