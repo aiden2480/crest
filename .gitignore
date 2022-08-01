@@ -1,0 +1,3 @@
+*.json
+local/
+!example_credentials.json
