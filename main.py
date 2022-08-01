@@ -1,3 +1,15 @@
+"""
+A program to post Scouts Terrain updates into a Jandi channel at the same
+time every week. See README.md for more information on setup and usage.
+
+The program fetches data from the approvals queue and parses it before
+sending it via the Jandi webhook. Extra information about each approval is
+fetched and included in the message, for example if the approval request
+is a Special Interest Area (SIA), the project name is included. If the
+request is an Outdoor Adventure Skill (OAS), the branch is included.
+Relevant emojis are also added, as is necessary. 
+"""
+
 import json
 import sched
 import requests
@@ -28,7 +40,7 @@ def main():
     print("Running main function")
 
     sess = generate_session()
-    unit = get_units(sess)[0] # Some users may be in multiple units, get the first unit
+    unit = get_units(sess)[0] # Some users may be in multiple units, this gets the first unit.
                               # You may want to hardcode this value if it suits your needs
 
     # Get pending/recent and filter out old approvals
