@@ -17,7 +17,7 @@ import requests
 import datetime as dt
 import time as timemod
 
-from functools import cache
+from functools import lru_cache
 
 
 # Unpack constants from JSON file
@@ -221,7 +221,7 @@ def get_achievement_meta(sess: requests.Session, event: dict) -> str:
 
     return result or expand(event["achievement"]["type"])
 
-@cache
+@lru_cache(maxsize=None)
 def get_member_achievements(sess: requests.Session, member: str) -> list:
     """
         Given a member ID, returns that member's achievements as fetched from Terrain.
