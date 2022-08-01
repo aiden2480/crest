@@ -34,9 +34,17 @@ The only third-party package used is [`requests`](https://pypi.org/project/reque
 $ python -m pip install requests
 ```
 
+## :camera_flash: Program screenshots
+<div align="center">
+    <img height="765px" src="https://user-images.githubusercontent.com/19619206/182129371-f943fecb-f86d-4903-a065-c66a6f5b3eda.png" />
+    <img height="765px" src="https://user-images.githubusercontent.com/19619206/182129485-9ebe85fc-cb13-4847-85f9-455eae6aed9d.png" />
+    <br /><i>Screenshots taken from two different units depicting the pending queue and recently approved achievements</i>
+</div>
+
 ## :memo: Future features
 - [ ] Add compatability with multiple units/profiles at once
 - [ ] Send emails instead of posting to Jandi topic
 - [ ] Improved error handling for incorrect credentials/other login errors
 - [ ] Error handle for if `credentials.json` does not exist/is invalid
 - [ ] More feedback in console
+- [ ] Check username and password are correct before first run
