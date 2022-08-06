@@ -297,15 +297,16 @@ def generate_session(username: str, password: str) -> requests.Session:
     return sess
 
 # Schedule functions
-def create_task(schedule: sched.scheduler, profile: Profile, wait: bool = False):
+def create_task(schedule: sched.scheduler, profile: Profile, setup: bool = True):
     """
         Creates a task to run the main function and then
         recursively calls itself to continuously repeat
         the task
 
-        The wait flag is only set if this function has not
-        been called recursively and as such the first run
-        may be premature so it is skipped
+        The setup flag indicates that the function call
+        has been run as a result of a new profile being
+        setup and so the main function should not be run
+        until the next scheduled time.
     """
 
     # Calculate next run
@@ -323,13 +324,13 @@ def create_task(schedule: sched.scheduler, profile: Profile, wait: bool = False)
         target += dt.timedelta(weeks=1)
 
     # Schedule next run
-    schedule.enterabs(target.timestamp(), 1, create_task, (schedule, profile))
+    schedule.enterabs(target.timestamp(), 1, create_task, (schedule, profile, False))
     print("Scheduling next run for {} at {}".format(profile.terrain_username, target))
 
     # The wait flag is only set if this function has not been called
     # recursively and as such the first run may be premature so it
     # is skipped
-    if wait:
+    if setup:
         return
 
     # Run main function
@@ -344,7 +345,7 @@ if __name__ == "__main__":
         profiles = json.load(fp)
 
         for profile in profiles:
-            create_task(schedule, Profile(**profile), wait=True)
+            create_task(schedule, Profile(**profile))
 
     # Run schedule forever
     schedule.run()
