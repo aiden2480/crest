@@ -1,13 +1,17 @@
 """
 A program to post Scouts Terrain updates into a Jandi channel at the same
-time every week. See README.md for more information on setup and usage.
+time every week. Multiple profiles from separate units are supported,
+simply add them to the profiles array. See README.md for more information
+on setup and usage.
 
 The program fetches data from the approvals queue and parses it before
 sending it via the Jandi webhook. Extra information about each approval is
 fetched and included in the message, for example if the approval request
 is a Special Interest Area (SIA), the project name is included. If the
 request is an Outdoor Adventure Skill (OAS), the branch is included.
-Relevant emojis are also added, as is necessary. 
+Relevant emojis are also added, as is necessary.
+
+Author: GitHub @aiden2480
 """
 
 import json
@@ -18,42 +22,45 @@ import datetime as dt
 import time as timemod
 
 from functools import lru_cache
+from dataclasses import dataclass
 
 
-# Unpack constants from JSON file
-with open("credentials.json") as fp:
-    raw = json.loads(fp.read())
-
-    LOOKBACK_DAYS = raw["lookback_days"]
-    CRON_WEEKDAY = raw["cron_weekday"]
-    CRON_TIMESTAMP = raw["cron_timestamp"]
-    TERRAIN_USERNAME = raw["terrain_username"]
-    TERRAIN_PASSWORD = raw["terrain_password"]
-    JANDI_WEBHOOK = raw["jandi_webhook"]
+# Define the main dataclass
+@dataclass
+class Profile:
+    """
+        Represents a profile to run the application with
+    """
+    lookback_days: int
+    cron_weekday: int
+    cron_timestamp: str
+    terrain_username: str
+    terrain_password: str
+    jandi_webhook: str
 
 
 # Main function
-def main():
+def main(profile: Profile):
     """
         Runs the main algorithm to fetch and parse Terrain data, before posting to Jandi
     """
 
     print("Running main function")
 
-    sess = generate_session()
+    sess = generate_session(profile.terrain_username, profile.terrain_password)
     unit = get_units(sess)[0] # Some users may be in multiple units, this gets the first unit.
                               # You may want to hardcode this value if it suits your needs
 
     # Get pending/recent and filter out old approvals
     raw_pending = get_pending_approvals(sess, unit)
     raw_recent = get_finalised_approvals(sess, unit)
-    raw_recent = filter(lambda i: calculate_date_delta(i["submission"]["date"]) <= LOOKBACK_DAYS, raw_recent)
+    raw_recent = filter(lambda i: date_delta(i["submission"]["date"]) <= profile.lookback_days, raw_recent)
     raw_recent = filter(lambda i: i["submission"]["outcome"] == "approved", raw_recent)
 
     # Sort each of the queues and split
     def sort(item):
         return item["member"]["first_name"] + item["member"]["last_name"] + \
-            str(calculate_date_delta(item["submission"]["date"]))
+            str(date_delta(item["submission"]["date"]))
     
     raw_pending = sorted(raw_pending, key=sort)
     raw_recent = sorted(raw_recent, key=sort)
@@ -96,11 +103,11 @@ def main():
 
     empty = [{"description": "No pending approvals"}]
     embed["connectInfo"] = embed["connectInfo"] or empty
-    send_jandi_webhook(JANDI_WEBHOOK, embed)
+    send_jandi_webhook(profile.jandi_webhook, embed)
 
     # Recently approved
     embed = {
-        "body": f"Approved in the last {LOOKBACK_DAYS} days",
+        "body": f"Approved in the last {profile.lookback_days} days",
         "connectColor": "#2ECC71",
         "connectInfo": [],
     }
@@ -120,7 +127,7 @@ def main():
 
     empty = [{"description": "No recent approvals"}]
     embed["connectInfo"] = embed["connectInfo"] or empty
-    send_jandi_webhook(JANDI_WEBHOOK, embed)
+    send_jandi_webhook(profile.jandi_webhook, embed)
 
 # Terrain API functions
 def get_pending_approvals(sess: requests.Session, unit: str):
@@ -246,7 +253,7 @@ def send_jandi_webhook(url: str, body: dict) -> requests.Response:
 
     return requests.post(url, headers=headers, json=body)
 
-def calculate_date_delta(isoformat: str) -> int:
+def date_delta(isoformat: str) -> int:
     """
         Calculates the number of days that have passed since a timestamp
     """
@@ -255,9 +262,9 @@ def calculate_date_delta(isoformat: str) -> int:
 
     return (now - stamp).days
 
-def generate_session() -> requests.Session:
+def generate_session(username: str, password: str) -> requests.Session:
     """
-        Logs in the requests Session and attaches the authentication header
+        Logs in the requests Session to Terrain and attaches the authentication header
     """
     sess = requests.Session()
 
@@ -265,8 +272,8 @@ def generate_session() -> requests.Session:
         "ClientId": "6v98tbc09aqfvh52fml3usas3c",
         "AuthFlow": "USER_PASSWORD_AUTH",
         "AuthParameters": {
-            "USERNAME": TERRAIN_USERNAME,
-            "PASSWORD": TERRAIN_PASSWORD,
+            "USERNAME": username,
+            "PASSWORD": password,
         },
     }
 
@@ -290,7 +297,7 @@ def generate_session() -> requests.Session:
     return sess
 
 # Schedule functions
-def create_task(schedule: sched.scheduler, wait: bool = False):
+def create_task(schedule: sched.scheduler, profile: Profile, wait: bool = False):
     """
         Creates a task to run the main function and then
         recursively calls itself to continuously repeat
@@ -303,8 +310,8 @@ def create_task(schedule: sched.scheduler, wait: bool = False):
 
     # Calculate next run
     today = dt.date.today()
-    targetday = today + dt.timedelta((CRON_WEEKDAY - today.weekday()) % 7)
-    hour, minute = CRON_TIMESTAMP.split(":")
+    targetday = today + dt.timedelta((profile.cron_weekday - today.weekday()) % 7)
+    hour, minute = profile.cron_timestamp.split(":")
 
     # Combine date and time into one object
     target = dt.datetime.combine(targetday, dt.time(
@@ -316,8 +323,8 @@ def create_task(schedule: sched.scheduler, wait: bool = False):
         target += dt.timedelta(weeks=1)
 
     # Schedule next run
-    schedule.enterabs(target.timestamp(), 1, create_task, (schedule,))
-    print("Scheduling next run for", target)
+    schedule.enterabs(target.timestamp(), 1, create_task, (schedule, profile))
+    print("Scheduling next run for {} at {}".format(profile.terrain_username, target))
 
     # The wait flag is only set if this function has not been called
     # recursively and as such the first run may be premature so it
@@ -326,14 +333,18 @@ def create_task(schedule: sched.scheduler, wait: bool = False):
         return
 
     # Run main function
-    main()
+    main(profile)
 
 
 if __name__ == "__main__":
     schedule = sched.scheduler(timemod.time, timemod.sleep)
 
-    # Create task to run main function
-    create_task(schedule, wait=True)
+    # Load profiles from file
+    with open("profiles.json", "r") as fp:
+        profiles = json.load(fp)
+
+        for profile in profiles:
+            create_task(schedule, Profile(**profile), wait=True)
 
     # Run schedule forever
     schedule.run()

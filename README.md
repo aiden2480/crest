@@ -1,6 +1,6 @@
 # :mountain: crest
-A program to post Scouts Terrain updates into a Jandi channel at the same time every week. See below for more information on setup and usage.
-The program fetches data from the approvals queue and parses it before sending it via the Jandi webhook. Extra information about each approval is fetched and included in the message, for example if the approval request is a Special Interest Area (SIA), the project name is included. If the request is an Outdoor Adventure Skill (OAS), the branch is included. Relevant emojis are also added, as is necessary. 
+A program to post Scouts Terrain updates into a Jandi channel at the same time every week. Multiple profiles from separate units are supported, simply add them to the profiles array. See below for more information on setup and usage.
+The program fetches data from the approvals queue and parses it before sending it via the Jandi webhook. Extra information about each approval is fetched and included in the message, for example if the approval request is a Special Interest Area (SIA), the project name is included. If the request is an Outdoor Adventure Skill (OAS), the branch is included. Relevant emojis are also added, as is necessary.
 
 <div align="center">
     <img src="https://img.shields.io/github/last-commit/aiden2480/crest?color=yellow" alt="Last commit" />
@@ -8,8 +8,8 @@ The program fetches data from the approvals queue and parses it before sending i
     <img src="https://img.shields.io/github/languages/code-size/aiden2480/crest" alt="Code size" />
 </div>
 
-## :key: Credentials
-To run the program, you will need to rename the example credentials file to `credentials.json` and fill in the values, which are as follows:
+## :key: Setup
+To run the program, you will need to rename the example profiles file to `profiles.json` and fill in the array with a dictionary for each profile. The dictionary should be defined as follows:
 
 | Property           | Value type     | Description                                                     | Example                      |
 |--------------------|----------------|-----------------------------------------------------------------|------------------------------|
@@ -42,9 +42,11 @@ $ python -m pip install requests
 </div>
 
 ## :memo: Future features
-- [ ] Add compatability with multiple units/profiles at once
 - [ ] Send emails instead of posting to Jandi topic
 - [ ] Improved error handling for incorrect credentials/other login errors
 - [ ] Error handle for if `credentials.json` does not exist/is invalid
 - [ ] More feedback in console
-- [ ] Check username and password are correct before first run
+- [ ] Check username and password are correct, and that user is on unit council
+- [ ] Add unit council message to readme
+- [ ] Add jandi webhook setup message to readme
+- [x] Add compatability with multiple units/profiles at once

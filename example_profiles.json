@@ -1,8 +1,8 @@
-{
+[{
     "lookback_days": 90,
     "cron_weekday": 1,
     "cron_timestamp": "17:00",
     "terrain_username": "nsw-0000",
     "terrain_password": "password",
     "jandi_webhook": "https://wh.jandi.com/connect-api/webhook/{topicid}/{webhookid}"
-}
+}]
