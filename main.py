@@ -21,6 +21,7 @@ import requests
 import datetime as dt
 import time as timemod
 
+from typing import Optional
 from functools import lru_cache
 from dataclasses import dataclass
 
@@ -37,6 +38,7 @@ class Profile:
     terrain_username: str
     terrain_password: str
     jandi_webhook: str
+    period: Optional[int] = 1
 
 
 # Main function
@@ -311,8 +313,11 @@ def create_task(schedule: sched.scheduler, profile: Profile, setup: bool = True)
 
     # Calculate next run
     today = dt.date.today()
-    targetday = today + dt.timedelta((profile.cron_weekday - today.weekday()) % 7)
     hour, minute = profile.cron_timestamp.split(":")
+    
+    next_run_delay = (profile.cron_weekday - today.weekday()) % 7   # Delay until next day of week
+    weeks_delay = 7 * profile.period if not setup else 0            # Run program every n weeks
+    targetday = today + dt.timedelta(next_run_delay + weeks_delay)  # Calculate target day
 
     # Combine date and time into one object
     target = dt.datetime.combine(targetday, dt.time(

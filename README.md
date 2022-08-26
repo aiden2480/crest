@@ -11,14 +11,15 @@ The program fetches data from the approvals queue and parses it before sending i
 ## :key: Setup
 To run the program, you will need to rename the example profiles file to `profiles.json` and fill in the array with a dictionary for each profile. The dictionary should be defined as follows:
 
-| Property           | Value type     | Description                                                     | Example                      |
-|--------------------|----------------|-----------------------------------------------------------------|------------------------------|
-| `lookback_days`    | Integer        | The number of days of approved requests to display in the embed | `90`                         |
-| `cron_weekday`     | Integer        | The weekday on which to evaluate the program. 0-6 for Mon-Sun   | `1`                          |
-| `cron_timestamp`   | String         | The timestamp in 24h time to execute, in the format `HH:MM`     | `"17:00"`                    |
-| `terrain_username` | String         | Your state, followed by a hyphen and then member number         | `"nsw-0000"`                 |
-| `terrain_password` | String         | Password for Scouts Terrain                                     | `"password"`                 |
-| `jandi_webhook`    | String         | The Jandi Connect webhook URL to post data to                   | `"https://wh.jandi.com/xxx"` |
+| Property           | Value type         | Description                                                      | Example                      |
+|--------------------|--------------------|------------------------------------------------------------------|------------------------------|
+| `lookback_days`    | Integer            | The number of days of approved requests to display in the embed  | `90`                         |
+| `cron_weekday`     | Integer            | The weekday on which to evaluate the program. 0-6 for Mon-Sun    | `1`                          |
+| `cron_timestamp`   | String             | The timestamp in 24h time to execute, in the format `HH:MM`      | `"17:00"`                    |
+| `terrain_username` | String             | Your state, followed by a hyphen and then member number          | `"nsw-0000"`                 |
+| `terrain_password` | String             | Password for Scouts Terrain                                      | `"password"`                 |
+| `jandi_webhook`    | String             | The Jandi Connect webhook URL to post data to                    | `"https://wh.jandi.com/xxx"` |
+| `period`           | Integer (optional) | The number of weeks between each run of the program. Default `1` | `2`                          |
 
 ## :snake: Running
 The program can be run with the following command after editing the configuration file, as demonstrated above. It is designed to be executed on a server and will execute continously. At the specified time, it will log in to the Scouts | Terrain API and fetch both the recently approved requests and the ones still pending. It will then process the data and post it to the specified Jandi topic. 
