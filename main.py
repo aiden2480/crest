@@ -349,8 +349,16 @@ if __name__ == "__main__":
     with open("profiles.json", "r") as fp:
         profiles = json.load(fp)
 
-        for profile in profiles:
-            create_task(schedule, Profile(**profile))
+    for profile in profiles:
+        profile = Profile(**profile)
+
+        try:
+            generate_session(profile.terrain_username, profile.terrain_password)
+        except RuntimeError:
+            print("Couldn't log in with the credentials provided for", profile.terrain_username)
+            continue
+        
+        create_task(schedule, profile)
 
     # Run schedule forever
     schedule.run()
