@@ -1,0 +1,11 @@
+﻿terrain_approvals:
+    enabled: true
+    tasks:
+        Scouts:
+            username: nsw-1057414
+            password: hello
+            jandi_url: https://google.com
+        Vennies:
+            username: nsw-180007
+            password: no123
+            jandi_url: https://google2.com
