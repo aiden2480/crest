@@ -1,11 +1,13 @@
 ﻿terrain_approvals:
     enabled: true
     tasks:
-        Scouts:
-            username: nsw-1057414
-            password: hello
-            jandi_url: https://google.com
-        Vennies:
-            username: nsw-180007
-            password: no123
-            jandi_url: https://google2.com
+        - task_name: "Scouts Terrain Approvals"
+          username: nsw-123123
+          password: password1
+          jandi_url: https://wh.jandi.com/connect-api/webhook/65436543/63456h634564h6534
+          cron_schedule: 0 17 * * 2
+        - task_name: "Vennies Terrain Approvals"
+          username: nsw-321321
+          password: password2
+          jandi_url: https://wh.jandi.com/connect-api/webhook/763576/554g3h25g3425342522
+          cron_schedule: 0 18 * * 4

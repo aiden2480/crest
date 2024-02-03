@@ -1,31 +1,17 @@
-﻿using Crest.Implementation;
+﻿using Crest.Integration;
+using Newtonsoft.Json;
 using Quartz;
 
 namespace Crest.Extensions.TerrainApprovals
 {
-	internal class TerrainApprovalsTask : ScheduleTaskBase
+	public class TerrainApprovalsTask : IJob
 	{
-		readonly string FriendlyName;
-
-		readonly TerrainApprovalsTaskConfig Config;
-
-		public TerrainApprovalsTask(string friendlyName, TerrainApprovalsTaskConfig config)
+		public Task Execute(IJobExecutionContext context)
 		{
-			FriendlyName = friendlyName;
-			Config = config;
-		}
+			var configString = context.MergedJobDataMap.GetString("config");
+			var config = JsonConvert.DeserializeObject<TerrainApprovalsTaskConfig>(configString);
 
-		public override string Name
-			=> GetType().Name + "-" + FriendlyName;
-
-		public override void OneTimeSetup()
-		{
-			Console.WriteLine("One time setup");
-		}
-
-		public override Task Execute(IJobExecutionContext context)
-		{
-			Console.WriteLine($"Execute - {FriendlyName}");
+			Console.WriteLine(config.Username);
 
 			return Task.CompletedTask;
 		}

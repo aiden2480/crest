@@ -1,6 +1,7 @@
 ﻿using Crest.Extensions.TerrainApprovals;
-using Crest.Implementation;
 using Crest.Integration;
+using Newtonsoft.Json;
+using Quartz;
 using Quartz.Impl;
 using YamlDotNet.Core;
 using YamlDotNet.Serialization;
@@ -8,52 +9,57 @@ using YamlDotNet.Serialization.NamingConventions;
 
 namespace Crest
 {
-	public class Program
+	public partial class Program
 	{
 		static async Task Main()
 		{
-			var config = GetValidConfiguration();
-			Console.WriteLine(config.TerrainApprovals!.Tasks);
-			var tasks = new List<IScheduleTask>();
+			var appConfig = GetValidAppConfiguration();
+			var taskConfigs = new List<ITaskConfig>();
 
 			var schedulerFactory = new StdSchedulerFactory();
-			var schedule = await schedulerFactory.GetScheduler();
+			var scheduler = await schedulerFactory.GetScheduler();
 
-			await schedule.Start();
+			await scheduler.Start();
 
-			foreach (var factory in Factories)
+			foreach (var factory in ConfigFactories)
 			{
-				tasks.AddRange(factory.GetScheduleTasks(config));
+				taskConfigs.AddRange(factory.GetValidConfigs(appConfig));
 			}
 
-			if (!tasks.Any())
+			if (!taskConfigs.Any())
 			{
 				Console.WriteLine("No tasks scheduled, please check configuration");
 				return;
 			}
 
-			foreach (var task in tasks)
+			foreach (var task in taskConfigs)
 			{
-				task.OneTimeSetup();
+				var job = JobBuilder.Create()
+					.WithIdentity(task.TaskName, task.ExtensionName)
+					.OfType(task.JobRunnerType)
+					.UsingJobData("config", JsonConvert.SerializeObject(task))
+					.Build();
 
-				await schedule.ScheduleJob(task.Job, task.Trigger);
+				var trigger = TriggerBuilder.Create()
+					.WithIdentity(task.TaskName, task.ExtensionName)
+					.WithCronSchedule(task.CronSchedule)
+					.StartNow()
+					.Build();
+
+				await scheduler.ScheduleJob(job, trigger);
+				Console.WriteLine($"Scheduled job {task.ExtensionName}|{task.TaskName}");
 			}
 
-			Console.CancelKeyPress += async delegate
-			{
-				await schedule.Shutdown();
-				Environment.Exit(0);
-			};
-
 			await Task.Delay(-1);
+			await scheduler.Shutdown();
 		}
 
-		static IEnumerable<IScheduleTaskFactory> Factories => new List<IScheduleTaskFactory>()
+		static IEnumerable<ITaskConfigFactory> ConfigFactories => new List<ITaskConfigFactory>()
 		{
-			new TerrainApprovalsTaskFactory(),
+			new TerrainApprovalsTaskConfigFactory(),
 		};
 
-		static ApplicationConfiguration GetValidConfiguration()
+		public static ApplicationConfiguration GetValidAppConfiguration()
 		{
 			ApplicationConfiguration config;
 			var configPath = "config.yaml";
