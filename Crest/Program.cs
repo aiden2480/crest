@@ -47,7 +47,9 @@ namespace Crest
 					.Build();
 
 				await scheduler.ScheduleJob(job, trigger);
-				Console.WriteLine($"Scheduled job {task.ExtensionName}|{task.TaskName}");
+
+				var nextFireTimeLocal = TimeZoneInfo.ConvertTimeFromUtc(trigger.GetNextFireTimeUtc().Value.DateTime, TimeZoneInfo.Local);
+				Console.WriteLine($"[{task.ExtensionName}] Scheduled job {task.TaskName} has next run {nextFireTimeLocal}");
 			}
 
 			await Task.Delay(-1);
