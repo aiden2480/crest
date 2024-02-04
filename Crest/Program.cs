@@ -63,7 +63,6 @@ namespace Crest
 
 		public static ApplicationConfiguration GetValidAppConfiguration()
 		{
-			ApplicationConfiguration config;
 			var configPath = "config.yaml";
 
 			if (!File.Exists(configPath))
@@ -79,7 +78,7 @@ namespace Crest
 
 			try
 			{
-				config = deserialiser.Deserialize<ApplicationConfiguration>(yaml);
+				return deserialiser.Deserialize<ApplicationConfiguration>(yaml);
 			}
 			catch (YamlException e) when (e.Message.Contains("not found on type"))
 			{
@@ -89,8 +88,14 @@ namespace Crest
 
 				throw new ArgumentException($"Unrecognised argument supplied: {unrecognisedArg} - please remove\n\n", e);
 			}
+			catch (YamlException e) when (e.InnerException != null && e.InnerException.Message.Contains("is not a valid YAML Boolean"))
+			{
+				var firstQuote = e.InnerException.Message.IndexOf('"');
+				var secondQuote = e.InnerException.Message.IndexOf('"', firstQuote + 1);
+				var invalidArg = e.InnerException.Message[firstQuote..(secondQuote + 1)];
 
-			return config;
+				throw new ArgumentException($"Invalid boolean value {invalidArg} supplied - replace with yes/no\n\n", e.InnerException);
+			}
 		}
 	}
 }
