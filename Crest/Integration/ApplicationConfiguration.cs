@@ -15,7 +15,7 @@ namespace Crest.Integration
 		/// <summary>
 		/// A boolean indicating whether this extension should be enabled
 		/// </summary>
-		public bool Enabled { get; set; }
+		public bool Enabled = true;
 
 		/// <summary>
 		/// A list of task-specific configurations for this extension, such as Terrain username/passwords
