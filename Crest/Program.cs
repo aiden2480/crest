@@ -9,10 +9,12 @@ using YamlDotNet.Serialization.NamingConventions;
 
 namespace Crest
 {
-	public partial class Program
+	public class Program
 	{
 		static async Task Main()
 		{
+			//LogProvider.SetCurrentLogProvider(new ConsoleLogProvider());
+
 			var appConfig = GetValidAppConfiguration();
 			var taskConfigs = new List<ITaskConfig>();
 

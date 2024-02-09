@@ -1,6 +1,5 @@
 ﻿using Crest.Integration;
 using Crest.Utilities;
-using Newtonsoft.Json;
 using System.Text.RegularExpressions;
 
 namespace Crest.Extensions.TerrainApprovals
@@ -25,12 +24,19 @@ namespace Crest.Extensions.TerrainApprovals
 					continue;
 				}
 
-				var response = TerrainAPIClient.Login(taskConfig.Username, taskConfig.Password);
+				var areTerrainCredentialsValid = new TerrainAPIClient().Login(taskConfig.Username, taskConfig.Password, out var loginFailureReason);
 
-				if (!response.IsSuccessStatusCode)
+				if (!areTerrainCredentialsValid)
 				{
-					var json = JsonConvert.DeserializeObject<Dictionary<string, string>>(response.Content.ReadAsStringAsync().Result);
-					Console.WriteLine($"Error occurred for task '{taskConfig.TaskName}': " + json["message"]);
+					Console.WriteLine($"Error occurred for task '{taskConfig.TaskName}': " + loginFailureReason);
+					continue;
+				}
+
+				var isJandiWebhookUrlValid = JandiAPIClient.IsValidIncomingWebhookURL(taskConfig.JandiUrl);
+
+				if (!isJandiWebhookUrlValid)
+				{
+					Console.WriteLine("Jandi URL matches expected url format but is invalid - has URL been set correctly?");
 					continue;
 				}
 
