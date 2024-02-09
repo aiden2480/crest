@@ -54,6 +54,18 @@ namespace Crest.Extensions.TerrainApprovals
 				return false;
 			}
 
+			if (taskConfig.LookbackDays <= 0)
+			{
+				Console.WriteLine("lookback_days must be supplied and greater than zero");
+				return false;
+			}
+
+			if (taskConfig.UnitId.Equals(Guid.Empty))
+			{
+				Console.WriteLine("unit_id must be supplied. This can be retrieved from the Terrain website");
+				return false;
+			}
+
 			if (!UsernameRegex.IsMatch(taskConfig.Username))
 			{
 				Console.WriteLine($"Username is in an unexpected format: '{taskConfig.Username}'");

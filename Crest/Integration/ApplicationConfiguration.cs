@@ -47,5 +47,15 @@ namespace Crest.Integration
 		/// The incoming webhook URL for the jandi topic to post to
 		/// </summary>
 		public string JandiUrl { get; set; }
+
+		/// <summary>
+		/// The ID of the unit to gather pending and finalised approvals from
+		/// </summary>
+		public Guid UnitId { get; set; }
+
+		/// <summary>
+		/// The number of days to look backwards when searching for approvals
+		/// </summary>
+		public int LookbackDays { get; set; }
 	}
 }
