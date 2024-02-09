@@ -13,7 +13,6 @@
 	<ItemGroup>
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 		<PackageReference Include="Quartz" Version="3.8.0" />
-		<PackageReference Include="System.Linq.Async" Version="6.0.1" />
 		<PackageReference Include="YamlDotNet" Version="15.1.0" />
 	</ItemGroup>
 
