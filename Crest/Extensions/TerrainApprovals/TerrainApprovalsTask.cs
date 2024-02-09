@@ -1,6 +1,5 @@
 ﻿using Crest.Integration;
 using Crest.Utilities;
-using Newtonsoft.Json.Linq;
 using System.Globalization;
 
 namespace Crest.Extensions.TerrainApprovals
@@ -30,8 +29,8 @@ namespace Crest.Extensions.TerrainApprovals
 		{
 			var pendingApprovals = TerrainClient.GetPendingApprovals(config.UnitId.ToString());
 			var finalisedApprovals = TerrainClient.GetFinalisedApprovals(config.UnitId.ToString())
-				.Where(a => (DateTime.Now - ParseApprovalDateString(a)).TotalDays <= config.LookbackDays)
-				.Where(a => a["submission"]["outcome"].ToString().Equals("approved"));
+				.Where(a => (DateTime.Now - a.SubmissionDate).TotalDays <= config.LookbackDays)
+				.Where(a => a.SubmissionOutcome.Equals("approved"));
 
 			var pendingGroups = GroupApprovals(pendingApprovals);
 			var finalisedGroups = GroupApprovals(finalisedApprovals);
@@ -43,16 +42,13 @@ namespace Crest.Extensions.TerrainApprovals
 			JandiAPIClient.SendMessage(config.JandiUrl, finalisedEmbed);
 		}
 
-		static DateTime ParseApprovalDateString(JToken approval)
-			=> DateTime.ParseExact(approval["submission"]["date"].ToString(), "dd-MMM-yyyy h:mm:ss tt", null);
-
-		Dictionary<string, string> GroupApprovals(IEnumerable<JToken> approvals)
+		Dictionary<string, string> GroupApprovals(IEnumerable<Approval> approvals)
 		{
 			var groups = new Dictionary<string, string>();
 
 			foreach (var approval in approvals)
 			{
-				var memberName = approval["member"]["first_name"] + " " + approval["member"]["last_name"];
+				var memberName = approval.MemberFirstName + " " + approval.MemberLastName;
 				var approvalDescription = GetApprovalDescription(approval);
 
 				if (approvalDescription == string.Empty)
@@ -73,9 +69,9 @@ namespace Crest.Extensions.TerrainApprovals
 			return groups;
 		}
 
-		string GetApprovalDescription(JToken approval)
+		string GetApprovalDescription(Approval approval)
 		{
-			return approval["achievement"]["type"].ToString() switch
+			return approval.AchievementType switch
 			{
 				"intro_scouting" => "⚜️ Introduction to Scouting",
 				"intro_section" => "🗣️ Introduction to Section",
@@ -92,21 +88,19 @@ namespace Crest.Extensions.TerrainApprovals
 			};
 		}
 
-		string GetOASDescription(JToken approval)
+		string GetOASDescription(Approval approval)
 		{
-			var achievementData = GetAchievementMeta(approval);
+			var achievement = GetAchievementMeta(approval);
 
-			if (achievementData == null)
+			if (achievement == null)
 			{
 				return string.Empty;
 			}
 
 			var textInfo = CultureInfo.CurrentCulture.TextInfo;
-			var branch = textInfo.ToTitleCase(achievementData["achievement_meta"]["branch"]
-				.ToString().Replace("-", " "));
+			var branch = textInfo.ToTitleCase(achievement.Branch.Replace("-", " "));
 
-			var stage = achievementData["achievement_meta"]["stage"].ToString();
-			var emoji = achievementData["achievement_meta"]["stream"].ToString() switch
+			var emoji = achievement.Stream switch
 			{
 				"alpine" => "❄️",
 				"aquatics" => "🏊",
@@ -121,23 +115,21 @@ namespace Crest.Extensions.TerrainApprovals
 				_ => "⭐",
 			};
 
-			return $"{emoji} {branch} stage {stage}";
+			return $"{emoji} {branch} stage {achievement.Stage}";
 		}
 
-		string GetSIADescription(JToken approval)
+		string GetSIADescription(Approval approval)
 		{
-			var achievementData = GetAchievementMeta(approval);
+			var achievement = GetAchievementMeta(approval);
 
-			if (achievementData == null)
+			if (achievement == null)
 			{
 				return string.Empty;
 			}
 
-			var projectName = achievementData["answers"]["project_name"]
-				.ToString().Trim();
+			var projectName = achievement.SIAProjectName.Trim();
 
-			var submissionType = approval["submission"]["type"].ToString();
-			var category = achievementData["answers"]["special_interest_area_selection"].ToString() switch
+			var category = achievement.SIASelection switch
 			{
 				"sia_adventure_sport" => "🏈 Adventure & Sport",
 				"sia_art_literature" => "🎭 Arts & Literature",
@@ -149,26 +141,23 @@ namespace Crest.Extensions.TerrainApprovals
 				_ => "❓ Unknown",
 			};
 
-			return $"{category} SIA - {projectName} ({submissionType})";
+			return $"{category} SIA - {projectName} ({approval.SubmissionType})";
 		}
 
-		string GetMilestoneDescription(JToken approval)
+		string GetMilestoneDescription(Approval approval)
 		{
-			var achievementData = GetAchievementMeta(approval);
+			var achievement = GetAchievementMeta(approval);
 
-			if (achievementData == null)
+			if (achievement == null)
 			{
 				return string.Empty;
 			}
 
-			var stage = achievementData["achievement_meta"]["stage"].ToString();
-
-			return $"👣 Milestone {stage}";
+			return $"👣 Milestone {achievement.Stage}";
 		}
 
-		JToken GetAchievementMeta(JToken approval)
-			=> TerrainClient.GetMemberAchievements(approval["member"]["id"].ToString())
-				.FirstOrDefault(a => a["id"].ToString() == approval["achievement"]["id"].ToString());
+		Achievement GetAchievementMeta(Approval approval)
+			=> TerrainClient.GetMemberAchievements(approval.MemberId).FirstOrDefault(a => a.Id == approval.AchievementId);
 
 		static JandiMessage GetJandiEmbed(string body, string colour, string emptyApprovalsMessage, Dictionary<string, string> approvals)
 		{

@@ -57,32 +57,97 @@ namespace Crest.Utilities
 			return false;
 		}
 
-		public IEnumerable<JToken> GetPendingApprovals(string unitID)
-			=> GetResultsList($"https://achievements.terrain.scouts.com.au/units/{unitID}/submissions?status=pending");
+		public IEnumerable<Approval> GetPendingApprovals(string unitID)
+			=> GetResultsList<Approval>($"https://achievements.terrain.scouts.com.au/units/{unitID}/submissions?status=pending");
 
-		public IEnumerable<JToken> GetFinalisedApprovals(string unitID)
-			=> GetResultsList($"https://achievements.terrain.scouts.com.au/units/{unitID}/submissions?status=finalised");
+		public IEnumerable<Approval> GetFinalisedApprovals(string unitID)
+			=> GetResultsList<Approval>($"https://achievements.terrain.scouts.com.au/units/{unitID}/submissions?status=finalised");
 
-		public IEnumerable<JToken> GetMemberAchievements(string memberID)
-			=> GetResultsList($"https://achievements.terrain.scouts.com.au/members/{memberID}/achievements");
+		public IEnumerable<Achievement> GetMemberAchievements(string memberID)
+			=> GetResultsList<Achievement>($"https://achievements.terrain.scouts.com.au/members/{memberID}/achievements");
 
-		IEnumerable<JToken> GetResultsList(string url)
+		IEnumerable<T> GetResultsList<T>(string url)
 		{
 			var response = Client.SendAsync(new HttpRequestMessage(HttpMethod.Get, url)).Result;
-			Console.WriteLine(url);
 
 			if (!response.IsSuccessStatusCode)
 			{
-				return new List<JToken>();
+				return new List<T>();
 			}
 
 			var responseJson = JObject.Parse(response.Content.ReadAsStringAsync().Result);
+
 			if (responseJson.TryGetValue("results", out var results))
 			{
-				return results.ToObject<IEnumerable<JToken>>();
+				var tokens = results.ToObject<IEnumerable<JToken>>();
+
+				return tokens.Select(token => (T) Activator.CreateInstance(typeof(T), token));
 			}
 
-			return null;
+			return new List<T>();
+		}
+	}
+
+	public class Approval
+	{
+		public readonly string MemberFirstName;
+
+		public readonly string MemberLastName;
+
+		public readonly string MemberId;
+
+		public readonly string SubmissionOutcome;
+
+		public readonly string SubmissionType;
+
+		public readonly DateTime SubmissionDate;
+
+		public readonly string AchievementType;
+
+		public readonly string AchievementId;
+
+		public Approval(JToken jToken)
+		{
+			MemberFirstName = jToken["member"]["first_name"].ToString();
+			MemberLastName = jToken["member"]["last_name"].ToString();
+			MemberId = jToken["member"]["id"].ToString();
+
+			// SubmissionOutcome will be empty if this approval is still pending
+			SubmissionOutcome = jToken["submission"]["outcome"]?.ToString();
+			SubmissionType = jToken["submission"]["type"].ToString();
+			SubmissionDate = DateTime.ParseExact(jToken["submission"]["date"].ToString(), "dd-MMM-yyyy h:mm:ss tt", null);
+			
+			AchievementType = jToken["achievement"]["type"].ToString();
+			AchievementId = jToken["achievement"]["id"].ToString();
+		}
+	}
+
+	public class Achievement
+	{
+		public readonly string Id;
+
+		public readonly string Branch;
+
+		public readonly string Stream;
+
+		public readonly string Stage;
+
+		public readonly string SIAProjectName;
+
+		public readonly string SIASelection;
+
+		public Achievement(JToken jToken)
+		{
+			Id = jToken["id"].ToString();
+
+			// All three for OAS, stage only for milestone
+			Branch = jToken["achievement_meta"]?["branch"]?.ToString();
+			Stream = jToken["achievement_meta"]?["stream"]?.ToString();
+			Stage = jToken["achievement_meta"]?["stage"]?.ToString();
+
+			// Only used for SIA
+			SIAProjectName = jToken["answers"]?["project_name"]?.ToString();
+			SIASelection = jToken["answers"]?["special_interest_area_selection"]?.ToString();
 		}
 	}
 }
