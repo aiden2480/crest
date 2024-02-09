@@ -76,7 +76,7 @@ namespace Crest.Extensions.TerrainApprovals
 				"intro_scouting" => "⚜️ Introduction to Scouting",
 				"intro_section" => "🗣️ Introduction to Section",
 				"course_reflection" => "📚 Personal Development Course",
-				"adventurous_journey" => "🚀 Adventurous Journey",
+				"adventurous_journey" => $"🚀 Adventurous Journey ({approval.SubmissionType})",
 				"personal_reflection" => "📐 Personal Reflection",
 				"peak_award" => "⭐ Peak Award",
 
