@@ -1,13 +1,11 @@
 ﻿using Crest.Integration;
 using Crest.Utilities;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Quartz;
 using System.Globalization;
 
 namespace Crest.Extensions.TerrainApprovals
 {
-	public class TerrainApprovalsTask : IJob
+	public class TerrainApprovalsTask : ScheduleTask<TerrainApprovalsTaskConfig>
 	{
 		readonly TerrainAPIClient TerrainClient;
 
@@ -16,19 +14,20 @@ namespace Crest.Extensions.TerrainApprovals
 			TerrainClient = new TerrainAPIClient();
 		}
 
-		public Task Execute(IJobExecutionContext context)
+		public override bool ShouldRun(TerrainApprovalsTaskConfig config)
 		{
-			var configString = context.MergedJobDataMap.GetString("config");
-			var config = JsonConvert.DeserializeObject<TerrainApprovalsTaskConfig>(configString);
+			var loginSucceeded = TerrainClient.Login(config.Username, config.Password, out var loginFailureReason);
 
-			if (!TerrainClient.Login(config.Username, config.Password, out var loginFailureReason))
+			if (!loginSucceeded)
 			{
 				Console.WriteLine(loginFailureReason);
-				context.Scheduler.PauseTrigger(context.Trigger.Key);
-
-				return Task.CompletedTask;
 			}
 
+			return loginSucceeded;
+		}
+
+		public override void Run(TerrainApprovalsTaskConfig config)
+		{
 			var pendingApprovals = TerrainClient.GetPendingApprovals(config.UnitId.ToString());
 			var finalisedApprovals = TerrainClient.GetFinalisedApprovals(config.UnitId.ToString())
 				.Where(a => (DateTime.Now - ParseApprovalDateString(a)).TotalDays <= config.LookbackDays)
@@ -42,8 +41,6 @@ namespace Crest.Extensions.TerrainApprovals
 
 			JandiAPIClient.SendMessage(config.JandiUrl, pendingEmbed);
 			JandiAPIClient.SendMessage(config.JandiUrl, finalisedEmbed);
-
-			return Task.CompletedTask;
 		}
 
 		static DateTime ParseApprovalDateString(JToken approval)
