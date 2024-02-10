@@ -9,15 +9,11 @@ namespace Crest.Utilities
 {
 	public class ScoutEventAPIClient
 	{
-		internal static string BASE_URL = "https://events.nsw.scouts.com.au";
+		internal static readonly string BASE_URL = "https://events.nsw.scouts.com.au";
 
-		public Region ScanRegionUrl(string regionUrl)
+		public Region ScanRegion(SubscribableRegion region)
 		{
-			if (!regionUrl.StartsWith(BASE_URL))
-			{
-				throw new ArgumentException($"URL {regionUrl} should start with {BASE_URL}", nameof(regionUrl));
-			}
-
+			var regionUrl = GetRegionUrl(region);
 			var doc = GetHtmlDocument(regionUrl);
 			var events = new List<Event>();
 
@@ -61,7 +57,20 @@ namespace Crest.Utilities
 
 			return new Region(regionName, regionUrl, events);
 		}
-	
+
+		private static string GetRegionUrl(SubscribableRegion region) => region switch
+		{
+			SubscribableRegion.state				  => BASE_URL + "/state/nsw",
+			SubscribableRegion.south_metropolitan	  => BASE_URL + "/region/sm",
+			SubscribableRegion.sydney_north			  => BASE_URL + "/region/sn",
+			SubscribableRegion.greater_western_sydney => BASE_URL + "/region/gws",
+			SubscribableRegion.hume					  => BASE_URL + "/region/hume",
+			SubscribableRegion.south_coast_tablelands => BASE_URL + "/region/sct",
+			SubscribableRegion.swash				  => BASE_URL + "/region/water-activities-centre",
+
+			_ => throw new NotImplementedException()
+		};
+
 		internal virtual HtmlDocument GetHtmlDocument(string url)
 			=> new HtmlWeb().Load(url);
 	}
@@ -113,5 +122,16 @@ namespace Crest.Utilities
 
 			_ => "❓"
 		};
+	}
+
+	public enum SubscribableRegion
+	{
+		state,
+		south_metropolitan,
+		sydney_north,
+		greater_western_sydney,
+		hume,
+		south_coast_tablelands,
+		swash,
 	}
 }

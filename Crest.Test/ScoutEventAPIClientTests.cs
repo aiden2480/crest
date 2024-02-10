@@ -13,22 +13,20 @@ namespace Crest.Test
 			// Arrange
 			var document = new HtmlDocument();
 			var mockClient = new Mock<ScoutEventAPIClient> { CallBase = true };
-
-			var url = "https://events.nsw.scouts.com.au/region/sm";
 			var client = mockClient.Object;
 
 			document.Load("TestFiles/ScoutEventExample.html");
-			mockClient.Setup(c => c.GetHtmlDocument(url)).Returns(document);
+			mockClient.Setup(c => c.GetHtmlDocument(It.IsAny<string>())).Returns(document);
 
 			// Act
-			var region = client.ScanRegionUrl(url);
+			var region = client.ScanRegion(SubscribableRegion.south_metropolitan);
 
 			// Assert
 			Assert.Multiple(() =>
 			{
 				Assert.That(region, Is.Not.Null);
 				Assert.That(region.Name, Is.EqualTo("South Metropolitan Region"));
-				Assert.That(region.Link, Is.EqualTo(url));
+				Assert.That(region.Link, Is.EqualTo("https://events.nsw.scouts.com.au/region/sm"));
 				Assert.That(region.Events, Has.Count.EqualTo(41));
 
 				var item = region.Events[0]; // Closed event
@@ -60,46 +58,34 @@ namespace Crest.Test
 			});
 		}
 
-		[Test]
-		public void TestThrowsErrorForInvalidRegionUrl()
-		{
-			// Arrange
-			var invalidUrl = "https://google.com";
-			var client = new ScoutEventAPIClient();
-
-			// Act & Assert
-			var exception = Assert.Throws<ArgumentException>(() => client.ScanRegionUrl(invalidUrl));
-			Assert.That(exception.Message, Is.EqualTo($"URL {invalidUrl} should start with https://events.nsw.scouts.com.au (Parameter 'regionUrl')"));
-		}
-
 		[TestCaseSource(nameof(Branches))]
-		public void TestLiveBranchUrl(string branchName, string branchUrl)
+		public void TestLiveBranchUrl(SubscribableRegion regionEnum, string regionName, string regionUrl)
 		{
 			// Arrange
 			var client = new ScoutEventAPIClient();
 
 			// Act
-			var region = client.ScanRegionUrl(branchUrl);
+			var region = client.ScanRegion(regionEnum);
 
 			// Assert
 			Assert.Multiple(() =>
 			{
 				Assert.That(region, Is.Not.Null);
 
-				Assert.That(region.Name, Is.EqualTo(branchName));
-				Assert.That(region.Link, Is.EqualTo(branchUrl));
+				Assert.That(region.Name, Is.EqualTo(regionName));
+				Assert.That(region.Link, Is.EqualTo(regionUrl));
 			});
 		}
 
-		static IEnumerable<string[]> Branches() => new List<string[]>
+		static IEnumerable<object[]> Branches() => new List<object[]>
 		{
-			new [] { "Scouts NSW", "https://events.nsw.scouts.com.au/state/nsw" },
-			new [] { "South Metropolitan Region", "https://events.nsw.scouts.com.au/region/sm" },
-			new [] { "Sydney North Region", "https://events.nsw.scouts.com.au/region/sn" },
-			new [] { "Greater Western Sydney Region", "https://events.nsw.scouts.com.au/region/gws" },
-			new [] { "Hume Region", "https://events.nsw.scouts.com.au/region/hume" },
-			new [] { "South Coast and Tablelands Region", "https://events.nsw.scouts.com.au/region/sct" },
-			new [] { "Water Activities Centre", "https://events.nsw.scouts.com.au/region/water-activities-centre" }
+			new object[] { SubscribableRegion.state, "Scouts NSW", "https://events.nsw.scouts.com.au/state/nsw" },
+			new object[] { SubscribableRegion.south_metropolitan, "South Metropolitan Region", "https://events.nsw.scouts.com.au/region/sm" },
+			new object[] { SubscribableRegion.sydney_north, "Sydney North Region", "https://events.nsw.scouts.com.au/region/sn" },
+			new object[] { SubscribableRegion.greater_western_sydney, "Greater Western Sydney Region", "https://events.nsw.scouts.com.au/region/gws" },
+			new object[] { SubscribableRegion.hume, "Hume Region", "https://events.nsw.scouts.com.au/region/hume" },
+			new object[] { SubscribableRegion.south_coast_tablelands, "South Coast and Tablelands Region", "https://events.nsw.scouts.com.au/region/sct" },
+			new object[] { SubscribableRegion.swash, "Water Activities Centre", "https://events.nsw.scouts.com.au/region/water-activities-centre" }
 		};
 	}
 }
