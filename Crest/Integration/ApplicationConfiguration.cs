@@ -1,4 +1,5 @@
 ﻿using Crest.Extensions.TerrainApprovals;
+using Crest.Utilities;
 
 namespace Crest.Integration
 {
@@ -8,6 +9,11 @@ namespace Crest.Integration
 		/// Configuration for the TerrainApprovalsTask extension
 		/// </summary>
 		public ExtensionConfiguration<TerrainApprovalsTaskConfig> TerrainApprovals;
+
+		/// <summary>
+		/// Configuration for the ScoutEventCrawler extension
+		/// </summary>
+		public ExtensionConfiguration<ScoutEventCrawlerTaskConfig> ScoutEventCrawler;
 	}
 
 	public class ExtensionConfiguration<T> where T : ITaskConfig
@@ -57,5 +63,26 @@ namespace Crest.Integration
 		/// The number of days to look backwards when searching for approvals
 		/// </summary>
 		public int LookbackDays { get; set; }
+	}
+
+	public class ScoutEventCrawlerTaskConfig : ITaskConfig
+	{
+		public string ExtensionName => "ScoutEventCrawlerTask";
+
+		public string TaskName { get; set; }
+
+		public Type JobRunnerType => typeof(ScoutEventCrawlerTask);
+
+		public string CronSchedule { set; get; }
+
+		/// <summary>
+		/// The incoming webhook URL for the jandi topic to post to
+		/// </summary>
+		public string JandiUrl { get; set; }
+
+		/// <summary>
+		/// A list of regions to subscribe to
+		/// </summary>
+		public List<SubscribableRegion> SubscribedRegions = new();
 	}
 }
