@@ -38,9 +38,49 @@ namespace Crest.Integration
 			return Task.CompletedTask;
 		}
 
-		public void CancelFutureTriggersForThisTask()
+		void CancelFutureTriggersForThisTask()
 		{
-			Context.Scheduler.PauseTrigger(Context.Trigger.Key);
+			// todo test this cancels properly
+			Context.Scheduler.UnscheduleJob(Context.Trigger.Key);
 		}
+
+		#region State
+
+		protected object GetState()
+		{
+			var allState = GetAllState();
+			var key = Context.Trigger.Key.Group + "-" + Context.Trigger.Key.Name;
+
+			return allState.ContainsKey(key) ? allState[key] : new object();
+		}
+
+		protected void SetState(object state)
+		{
+			var allState = GetAllState();
+			var key = Context.Trigger.Key.Group + "-" + Context.Trigger.Key.Name;
+
+			allState[key] = state;
+
+			var serialised = JsonConvert.SerializeObject(allState);
+
+			File.WriteAllText(StatePath, serialised);
+		}
+
+		private static Dictionary<string, object> GetAllState()
+		{
+			if (!File.Exists(StatePath))
+			{
+				return new Dictionary<string, object>();
+			}
+
+			var fileContents = File.ReadAllText(StatePath);
+
+			return JsonConvert.DeserializeObject<Dictionary<string, object>>(fileContents);
+		}
+
+		static string StatePath
+			=> Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "crest.programdata");
+
+		#endregion
 	}
 }
