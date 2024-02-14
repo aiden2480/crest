@@ -2,12 +2,15 @@
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
 		<TargetFramework>net6.0</TargetFramework>
-		<PublishSingleFile>true</PublishSingleFile>
-		<SelfContained>true</SelfContained>
-		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>disable</Nullable>
+		<PublishSingleFile>true</PublishSingleFile>
+		<SelfContained>true</SelfContained>
+		<PublishReadyToRun>true</PublishReadyToRun>
 		<DebugType>embedded</DebugType>
+		<DebugSymbols>false</DebugSymbols>
+		<PublishDir>bin/publish</PublishDir>
+		<ApplicationIcon>../app.ico</ApplicationIcon>
 	</PropertyGroup>
 	
 	<ItemGroup>

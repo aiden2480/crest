@@ -5,12 +5,12 @@
 		<Nullable>enable</Nullable>
 
 		<IsPackable>false</IsPackable>
+		<IsPublishable>false</IsPublishable>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'" />
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'" />
-
 	<ItemGroup>
+		<ProjectReference Include="..\Crest\Crest.csproj" />
+		
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
 		<PackageReference Include="Moq" Version="4.20.70" />
 		<PackageReference Include="NUnit" Version="3.13.3" />
@@ -23,9 +23,5 @@
 		<Content Include="TestFiles\**">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
-	</ItemGroup>
-
-	<ItemGroup>
-		<ProjectReference Include="..\Crest\Crest.csproj" />
 	</ItemGroup>
 </Project>
