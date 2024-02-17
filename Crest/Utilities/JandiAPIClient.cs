@@ -8,7 +8,7 @@ namespace Crest.Utilities
 {
 	public class JandiAPIClient
 	{
-		public static bool IsValidIncomingWebhookURL(string url)
+		public virtual bool IsValidIncomingWebhookURL(string url)
 		{
 			var response = SendMessage(url, new JandiMessage());
 			var responseBody = response.Content.ReadAsStringAsync().Result;
@@ -17,7 +17,7 @@ namespace Crest.Utilities
 				responseBody == "{\"code\":40052,\"msg\":\"Invalid payload - body\"}";
 		}
 
-		public static HttpResponseMessage SendMessage(string url, JandiMessage message)
+		public virtual HttpResponseMessage SendMessage(string url, JandiMessage message)
 		{
 			var client = new HttpClient();
 			var request = new HttpRequestMessage(HttpMethod.Post, url)
