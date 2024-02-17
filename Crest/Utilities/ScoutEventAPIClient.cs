@@ -114,6 +114,8 @@ namespace Crest.Utilities
 
 		public string Link => $"{ScoutEventAPIClient.BASE_URL}/event/{Id}";
 
+		public bool IsClosed => RegistrationStatus.StartsWith("Closed");
+
 		public string Emoji => RegistrationSeverity switch
 		{
 			"success" => "✅",

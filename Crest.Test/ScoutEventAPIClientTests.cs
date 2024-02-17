@@ -36,7 +36,8 @@ namespace Crest.Test
 				Assert.That(item.RegistrationStatus, Is.EqualTo("Closed"));
 				Assert.That(item.RegistrationSeverity, Is.EqualTo("danger"));
 				Assert.That(item.Link, Is.EqualTo("https://events.nsw.scouts.com.au/event/1186"));
-				Assert.That(item.Emoji, Is.EqualTo("⛔")); 
+				Assert.That(item.Emoji, Is.EqualTo("⛔"));
+				Assert.That(item.IsClosed, Is.True);
 				
 				var item2 = region.Events[7]; // Open event
 				Assert.That(item2.Name, Is.EqualTo("Zero to Hero Abseil program for Venturers"));
@@ -46,6 +47,7 @@ namespace Crest.Test
 				Assert.That(item2.RegistrationSeverity, Is.EqualTo("success"));
 				Assert.That(item2.Link, Is.EqualTo("https://events.nsw.scouts.com.au/event/1177"));
 				Assert.That(item2.Emoji, Is.EqualTo("✅"));
+				Assert.That(item2.IsClosed, Is.False);
 
 				var item3 = region.Events[40]; // Pending event
 				Assert.That(item3.Name, Is.EqualTo("Fortress Creek Canyon"));
@@ -55,6 +57,7 @@ namespace Crest.Test
 				Assert.That(item3.RegistrationSeverity, Is.EqualTo("warning"));
 				Assert.That(item3.Link, Is.EqualTo("https://events.nsw.scouts.com.au/event/1410"));
 				Assert.That(item3.Emoji, Is.EqualTo("⚠️"));
+				Assert.That(item3.IsClosed, Is.False);
 			});
 		}
 
