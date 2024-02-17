@@ -1,0 +1,10 @@
+﻿terrain_approvals:
+  enabled: true
+  tasks:
+  - task_name: Example task
+    username: nsw-13232
+    password: password
+    unit_id: b3895042-9e1d-42ed-87d1-30b13020859f
+    lookback_days: 100
+    jandi_url: https://jandi.com/definitelyarealwebhook
+    cron_schedule: 0 0 17 ? * TUE

@@ -24,4 +24,10 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>
+
+	<ItemGroup>
+	  <None Remove="TestFiles\ValidYaml1.yaml" />
+	  <None Remove="TestFiles\ValidYaml2.yaml" />
+	  <None Remove="TestFiles\ValidYaml3.yaml" />
+	</ItemGroup>
 </Project>

@@ -1,0 +1,31 @@
+﻿terrain_approvals:
+  enabled: true
+  tasks:
+  - task_name: Scout Unit - Tuesdays at 5pm
+    username: nsw-13232
+    password: password
+    unit_id: b3895042-9e1d-42ed-87d1-30b13020859f
+    lookback_days: 100
+    jandi_url: https://jandi.com/definitelyarealwebhook
+    cron_schedule: 0 0 17 ? * TUE
+  - task_name: Venturer Unit - Thursdays at 7pm
+    username: vic-2432432
+    password: password
+    unit_id: 516c17e6-a6b6-4b08-9383-1d04b9c4b8e5
+    lookback_days: 60
+    jandi_url: https://jandi.com/definitelyarealwebhook
+    cron_schedule: 0 0 19 ? * THU
+
+scout_event_crawler:
+  enabled: false
+  tasks:
+  - task_name: Scout Event Crawler - All Sections
+    cron_schedule: 0 0 12 ? * MON
+    subscribed_regions:
+    - state
+    - south_metropolitan
+    - sydney_north
+    - greater_western_sydney
+    - hume
+    - south_coast_tablelands
+    - swash

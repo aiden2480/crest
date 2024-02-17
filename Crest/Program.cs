@@ -16,11 +16,11 @@ namespace Crest
 			await crest.RunForever();
 		}
 
-		public static ApplicationConfiguration GetValidAppConfiguration(string configPath)
+		internal static ApplicationConfiguration GetValidAppConfiguration(string configPath)
 		{
 			if (!File.Exists(configPath))
 			{
-				throw new FileNotFoundException("You need to create a configuration file", configPath);
+				throw new FileNotFoundException($"You need to create a configuration file named {configPath}", configPath);
 			}
 
 			// Read and attempt to deserialise, throw an error if we can't
@@ -39,7 +39,7 @@ namespace Crest
 				var secondQuote = e.Message.IndexOf("'", firstQuote + 1);
 				var unrecognisedArg = e.Message[firstQuote..(secondQuote + 1)];
 
-				throw new ArgumentException($"Unrecognised argument supplied: {unrecognisedArg} - please remove\n\n", e);
+				throw new ArgumentException($"Unrecognised argument supplied: {unrecognisedArg} - please remove", e);
 			}
 			catch (YamlException e) when (e.InnerException != null && e.InnerException.Message.Contains("is not a valid YAML Boolean"))
 			{
@@ -47,8 +47,10 @@ namespace Crest
 				var secondQuote = e.InnerException.Message.IndexOf('"', firstQuote + 1);
 				var invalidArg = e.InnerException.Message[firstQuote..(secondQuote + 1)];
 
-				throw new ArgumentException($"Invalid boolean value {invalidArg} supplied - replace with yes/no\n\n", e.InnerException);
+				throw new ArgumentException($"Invalid boolean value {invalidArg} supplied - replace with yes/no", e.InnerException);
 			}
+			// todo does not throw when mandatory argument not supplied
+			// todo should also have better error handling for subscribable_regions enum
 		}
 	}
 }
