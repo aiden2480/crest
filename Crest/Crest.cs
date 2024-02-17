@@ -37,21 +37,12 @@ namespace Crest
 
 			foreach (var task in taskConfigs)
 			{
-				var job = JobBuilder.Create()
-					.WithIdentity(task.TaskName, task.ExtensionName)
-					.OfType(task.JobRunnerType)
-					.UsingJobData("config", JsonConvert.SerializeObject(task))
-					.Build();
-
-				var trigger = TriggerBuilder.Create()
-					.WithIdentity(task.TaskName, task.ExtensionName)
-					.WithCronSchedule(task.CronSchedule)
-					.StartNow()
-					.Build();
+				var job = BuildJobForTask(task);
+				var trigger = BuildTriggerForTask(task);
 
 				await scheduler.ScheduleJob(job, trigger);
-
 				var nextFireTimeLocal = TimeZoneInfo.ConvertTimeFromUtc(trigger.GetNextFireTimeUtc().Value.DateTime, TimeZoneInfo.Local);
+
 				Console.WriteLine($"[{task.ExtensionName}] Scheduled job {task.TaskName} has next run {nextFireTimeLocal}");
 			}
 
@@ -59,7 +50,25 @@ namespace Crest
 			await scheduler.Shutdown();
 		}
 
-		static IEnumerable<ITaskConfigFactory> ConfigFactories => new List<ITaskConfigFactory>()
+		private static IJobDetail BuildJobForTask(ITaskConfig taskConfig)
+		{
+			return JobBuilder.Create()
+				.WithIdentity(taskConfig.TaskName, taskConfig.ExtensionName)
+				.OfType(taskConfig.JobRunnerType)
+				.UsingJobData("config", JsonConvert.SerializeObject(taskConfig))
+				.Build();
+		}
+
+		private static ITrigger BuildTriggerForTask(ITaskConfig taskConfig)
+		{
+			return TriggerBuilder.Create()
+				.WithIdentity(taskConfig.TaskName, taskConfig.ExtensionName)
+				.WithCronSchedule(taskConfig.CronSchedule)
+				.StartNow()
+				.Build();
+		}
+
+		private static IEnumerable<ITaskConfigFactory> ConfigFactories => new List<ITaskConfigFactory>()
 		{
 			new TerrainApprovalsTaskConfigFactory(),
 			new ScoutEventCrawlerTaskConfigFactory(),
