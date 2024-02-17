@@ -1,14 +1,11 @@
 using Crest.Integration;
 using Moq;
 using NUnit.Framework;
-using Quartz;
 
 namespace Crest.Test
 {
-	public class StateTests
+	public class StateTests : DeleteProgramDataBeforeTest
 	{
-		static readonly string ProgramDataLocation = "mockcrest.programdata";
-
 		static IEnumerable<object> TestValues() => new List<object>
 		{
 			new DateTime(2024, 02, 02),
@@ -62,15 +59,6 @@ namespace Crest.Test
 
 		#region Helpers
 		
-		[OneTimeSetUp]
-		public void OneTimeSetUp()
-		{
-			if (File.Exists(ProgramDataLocation))
-			{
-				File.Delete(ProgramDataLocation);
-			}
-		}
-
 		static ScheduleTask<TerrainApprovalsTaskConfig> GetMockScheduleTask(string jobName, string jobGroup)
 		{
 			var mock = new Mock<ScheduleTask<TerrainApprovalsTaskConfig>>();
