@@ -11,23 +11,13 @@ namespace Crest.Test;
 public class ScoutEventCrawlerTaskTests : DeleteProgramDataBeforeTest
 {
 	[Test]
-	public void TestOneRegion_NoPreviouslySeenEvents()
+	public void TestSingularRegion_NoPreviouslySeenEvents()
 	{
-		// Arrange
-		CreateMocks(out var task, out var mockJandiClient, out var mockScoutEventClient);
-
 		var taskConfig = new ScoutEventCrawlerTaskConfig()
 		{
 			JandiUrl = "https://jandiurl.com",
 			SubscribedRegions = { SubscribableRegion.south_metropolitan }
 		};
-
-		var mockSouthMetRegion = new Region("South Metropolitan Region", "https://events.nsw.scouts.com.au/region/sm", new List<Event>
-		{
-			new("Paddling Day", 123, "Saturday 23rd December to Sunday 24th December", "Open", "success"),
-			new("Rock Climbing", 456, "Sunday 1st Jan to Monday 2nd Jan", "Closed", "danger"),
-			new("Abseiling", 789, "March 15th", "Open (Restricted)", "warning"),
-		});
 
 		var expectedJandiMessage = new JandiMessage()
 		{
@@ -39,7 +29,83 @@ public class ScoutEventCrawlerTaskTests : DeleteProgramDataBeforeTest
 			}
 		};
 
+		AssertJandiMessageIsSent(taskConfig, expectedJandiMessage);
+	}
+
+	[Test]
+	public void TestSingularRegion_AllEventsPreviouslySeen()
+	{
+		var previouslySeenEvents = new List<int> { 123, 456, 789 };
+
+		var taskConfig = new ScoutEventCrawlerTaskConfig()
+		{
+			JandiUrl = "https://jandiurl.com",
+			SubscribedRegions = { SubscribableRegion.south_metropolitan }
+		};
+
+		var expectedJandiMessage = new JandiMessage()
+		{
+			Body = "New ScoutLink events",
+			ConnectColor = "#84BC48",
+			ConnectInfo = new List<JandiConnect>
+			{
+				new() { Title = null, Description = "No new events posted for any subscribed regions" },
+			}
+		};
+
+		AssertJandiMessageIsSent(taskConfig, expectedJandiMessage, previouslySeenEvents);
+	}
+
+	[Test]
+	public void TestMultipleRegions_SomePreviouslySeenOrDuplicateEvents()
+	{
+		var previouslySeenEvents = new List<int> { 123 };
+
+		var taskConfig = new ScoutEventCrawlerTaskConfig()
+		{
+			JandiUrl = "https://jandiurl.com",
+			SubscribedRegions = { SubscribableRegion.south_metropolitan, SubscribableRegion.sydney_north }
+		};
+
+		var expectedJandiMessage = new JandiMessage()
+		{
+			Body = "New ScoutLink events",
+			ConnectColor = "#84BC48",
+			ConnectInfo = new List<JandiConnect>
+			{
+				new() { Title = "⚜️ [South Metropolitan Region](https://events.nsw.scouts.com.au/region/sm)", Description = "[Abseiling](https://events.nsw.scouts.com.au/event/789) • Open (Restricted) ⚠️\nMarch 15th" },
+				new() { Title = "⚜️ [Sydney North Region](https://events.nsw.scouts.com.au/region/sn)", Description = "[Canyoning](https://events.nsw.scouts.com.au/event/1178) • Open ✅\nOctober 20th" },
+			}
+		};
+
+		AssertJandiMessageIsSent(taskConfig, expectedJandiMessage, previouslySeenEvents);
+	}
+
+	#region Helpers
+
+	private static void AssertJandiMessageIsSent(ScoutEventCrawlerTaskConfig taskConfig, JandiMessage expectedJandiMessage, List<int> previouslySeenEvents)
+	{
+		// Arrange
+		CreateMocks(out var task, out var mockJandiClient, out var mockScoutEventClient);
+		task.SetState(previouslySeenEvents);
+
+		var mockSouthMetRegion = new Region("South Metropolitan Region", "https://events.nsw.scouts.com.au/region/sm", new List<Event>
+		{
+			new("Paddling Day", 123, "Saturday 23rd December to Sunday 24th December", "Open", "success"),
+			new("Rock Climbing", 456, "Sunday 1st Jan to Monday 2nd Jan", "Closed", "danger"), // none should have 456 because it is closed
+			new("Abseiling", 789, "March 15th", "Open (Restricted)", "warning"),
+		});
+
+		var mockSydneyNorthRegion = new Region("Sydney North Region", "https://events.nsw.scouts.com.au/region/sn", new List<Event>
+		{
+			new("Rock Climbing", 456, "Sunday 1st Jan to Monday 2nd Jan", "Closed", "danger"),
+			new("Canyoning", 1178, "October 20th", "Open", "success"),
+		});
+
+		// Throw an error for any region not explicitly defined which it should do anyway
+		mockScoutEventClient.Setup(c => c.ScanRegion(It.IsAny<SubscribableRegion>())).Throws(new NotImplementedException("Test failure: Region has not been implemented"));
 		mockScoutEventClient.Setup(c => c.ScanRegion(SubscribableRegion.south_metropolitan)).Returns(mockSouthMetRegion);
+		mockScoutEventClient.Setup(c => c.ScanRegion(SubscribableRegion.sydney_north)).Returns(mockSydneyNorthRegion);
 
 		// Act
 		task.Run(taskConfig);
@@ -51,7 +117,8 @@ public class ScoutEventCrawlerTaskTests : DeleteProgramDataBeforeTest
 		), Times.Once);
 	}
 
-	#region Helpers
+	private static void AssertJandiMessageIsSent(ScoutEventCrawlerTaskConfig taskConfig, JandiMessage expectedJandiMessage)
+		=> AssertJandiMessageIsSent(taskConfig, expectedJandiMessage, new List<int>());
 
 	private static void CreateMocks(out ScoutEventCrawlerTask task, out Mock<JandiAPIClient> mockJandiClient, out Mock<ScoutEventAPIClient> mockScoutEventClient, bool verbose = false)
 	{
@@ -61,7 +128,7 @@ public class ScoutEventCrawlerTaskTests : DeleteProgramDataBeforeTest
 		task = mockTask.Object;
 
 		mockTask.SetupGet(m => m.StatePath).Returns(ProgramDataLocation);
-		mockTask.SetupGet(t => t.StateKey).Returns("crawler1-ScoutEventCrawlerTask");
+		mockTask.SetupGet(t => t.StateKey).Returns("taskName-ScoutEventCrawlerTask");
 
 		if (verbose)
 		{
