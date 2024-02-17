@@ -5,7 +5,6 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>disable</Nullable>
 		<PublishSingleFile>true</PublishSingleFile>
-		<SelfContained>true</SelfContained>
 		<PublishReadyToRun>true</PublishReadyToRun>
 		<DebugType>embedded</DebugType>
 		<DebugSymbols>false</DebugSymbols>
