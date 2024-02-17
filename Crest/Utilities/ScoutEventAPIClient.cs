@@ -11,7 +11,7 @@ namespace Crest.Utilities
 	{
 		internal static readonly string BASE_URL = "https://events.nsw.scouts.com.au";
 
-		public Region ScanRegion(SubscribableRegion region)
+		public virtual Region ScanRegion(SubscribableRegion region)
 		{
 			var regionUrl = GetRegionUrl(region);
 			var doc = GetHtmlDocument(regionUrl);
