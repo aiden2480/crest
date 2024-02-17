@@ -1,78 +1,77 @@
 ﻿using Crest.Integration;
 using Crest.Utilities;
 
-namespace Crest.Extensions.TerrainApprovals
+namespace Crest.Extensions.TerrainApprovals;
+
+public class ScoutEventCrawlerTask : ScheduleTask<ScoutEventCrawlerTaskConfig>
 {
-	public class ScoutEventCrawlerTask : ScheduleTask<ScoutEventCrawlerTaskConfig>
+	internal readonly JandiAPIClient JandiClient;
+
+	internal readonly ScoutEventAPIClient ScoutEventClient;
+
+	internal ScoutEventCrawlerTask(JandiAPIClient jandiClient, ScoutEventAPIClient scoutEventClient)
 	{
-		internal readonly JandiAPIClient JandiClient;
+		JandiClient = jandiClient;
+		ScoutEventClient = scoutEventClient;
+	}
 
-		internal readonly ScoutEventAPIClient ScoutEventClient;
+	public ScoutEventCrawlerTask() : this(new JandiAPIClient(), new ScoutEventAPIClient()) { }
 
-		internal ScoutEventCrawlerTask(JandiAPIClient jandiClient, ScoutEventAPIClient scoutEventClient)
+	public override void Run(ScoutEventCrawlerTaskConfig config)
+	{
+		var regions = config.SubscribedRegions
+			.Select(r => ScoutEventClient.ScanRegion(r))
+			.ToList();
+		var seenIDs = GetState(def: new List<int>());
+
+		JandiClient.SendMessage(config.JandiUrl, GetJandiMessage(regions, seenIDs));
+		
+		SetState(seenIDs);
+	}
+
+	internal JandiMessage GetJandiMessage(List<Region> regions, List<int> seenIDs)
+	{
+		var message = new JandiMessage
 		{
-			JandiClient = jandiClient;
-			ScoutEventClient = scoutEventClient;
-		}
+			Body = "New ScoutLink events",
+			ConnectColor = "#84BC48",
+		};
 
-		public ScoutEventCrawlerTask() : this(new JandiAPIClient(), new ScoutEventAPIClient()) { }
-
-		public override void Run(ScoutEventCrawlerTaskConfig config)
+		foreach (var region in regions)
 		{
-			var regions = config.SubscribedRegions
-				.Select(r => ScoutEventClient.ScanRegion(r))
-				.ToList();
-			var seenIDs = GetState(def: new List<int>());
+			var regionDescription = new List<string>();
 
-			JandiClient.SendMessage(config.JandiUrl, GetJandiMessage(regions, seenIDs));
-			
-			SetState(seenIDs);
-		}
-
-		internal JandiMessage GetJandiMessage(List<Region> regions, List<int> seenIDs)
-		{
-			var message = new JandiMessage
+			foreach (var item in region.Events)
 			{
-				Body = "New ScoutLink events",
-				ConnectColor = "#84BC48",
-			};
+				var alreadySeenThisEvent = seenIDs.Contains(item.Id);
 
-			foreach (var region in regions)
-			{
-				var regionDescription = new List<string>();
-
-				foreach (var item in region.Events)
+				if (item.IsClosed || alreadySeenThisEvent)
 				{
-					var alreadySeenThisEvent = seenIDs.Contains(item.Id);
-
-					if (item.IsClosed || alreadySeenThisEvent)
-					{
-						continue;
-					}
-
-					seenIDs.Add(item.Id);
-					regionDescription.Add($"[{item.Name}]({item.Link}) • {item.RegistrationStatus} {item.Emoji}\n{item.Info}");
+					continue;
 				}
 
-				if (regionDescription.Any())
-				{
-					message.ConnectInfo.Add(new JandiConnect
-					{
-						Title = $"⚜️ [{region.Name}]({region.Link})",
-						Description = string.Join("\n\n", regionDescription)
-					});
-				}
+				seenIDs.Add(item.Id);
+				regionDescription.Add($"[{item.Name}]({item.Link}) • {item.RegistrationStatus} {item.Emoji}\n{item.Info}");
 			}
 
-			if (!message.ConnectInfo.Any())
+			if (regionDescription.Any())
 			{
 				message.ConnectInfo.Add(new JandiConnect
 				{
-					Description = "No new events posted for any subscribed regions"
+					Title = $"⚜️ [{region.Name}]({region.Link})",
+					Description = string.Join("\n\n", regionDescription)
 				});
 			}
-
-			return message;
 		}
+
+		if (!message.ConnectInfo.Any())
+		{
+			message.ConnectInfo.Add(new JandiConnect
+			{
+				Description = "No new events posted for any subscribed regions"
+			});
+		}
+
+		return message;
 	}
 }
