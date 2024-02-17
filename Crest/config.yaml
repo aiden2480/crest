@@ -1,17 +1,45 @@
 ﻿terrain_approvals:
-    enabled: true
-    tasks:
-        - task_name: "Scouts Terrain Approvals"
-          username: nsw-123123
-          password: password1
-          unit_id: b3895042-9e1d-42ed-87d1-30b13020859f
-          lookback_days: 90
-          jandi_url: https://wh.jandi.com/connect-api/webhook/65436543/63456h634564h6534
-          cron_schedule: 0 0 17 ? * TUE
-        - task_name: "Vennies Terrain Approvals"
-          username: nsw-321321
-          password: password2
-          unit_id: fb0b4b9b-e549-401d-93a8-10da3b89a047
-          lookback_days: 60
-          jandi_url: https://wh.jandi.com/connect-api/webhook/763576/554g3h25g3425342522
-          cron_schedule: 0 0 18 ? * THU
+  enabled: true
+  tasks:
+  - task_name: Scouts Terrain Approvals
+    
+    # Username and password for Terrain in the format branch-memberid
+    username: nsw-123123
+    password: ScoutsTerrainPassword
+
+    # The GUID of the target unit. You must have unit council permissions for said unit. This can be found from opening network requests on Terrain
+    unit_id: b3895042-9e1d-42ed-87d1-30b13020859f
+
+    # The number of days to look backwards for recent approvals. See examples below
+    lookback_days: 90
+
+    # The incoming webhook url to post to
+    jandi_url: https://wh.jandi.com/connect-api/webhook/65436543/63456h634564h6534
+
+    # The cron schedule to run this task on. Make/validate your own at http://cronmaker.com/
+    cron_schedule: 0 0 17 ? * TUE
+
+  # This second task will ran in parallel with the first
+  - task_name: Vennies Terrain Approvals
+    username: nsw-321321
+    password: password2
+    unit_id: fb0b4b9b-e549-401d-93a8-10da3b89a047
+    lookback_days: 60
+    jandi_url: https://wh.jandi.com/connect-api/webhook/763576/554g3h25g3425342522
+    cron_schedule: 0 0 18 ? * THU
+
+scout_event_crawler:
+  tasks:
+  - task_name: Scout Event Crawler - All Sections
+    cron_schedule: 0 0 12 ? * MON
+    jandi_url: https://wh.jandi.com/connect-api/webhook/763576/5435g4354353454j353
+    
+    # A list of regions from NSW to subscribe to updates from. Below are all possible values
+    subscribed_regions:
+    - state
+    - south_metropolitan
+    - sydney_north
+    - greater_western_sydney
+    - hume
+    - south_coast_tablelands
+    - swash
