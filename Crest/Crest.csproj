@@ -18,9 +18,10 @@
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 		<PackageReference Include="Quartz" Version="3.8.0" />
 		<PackageReference Include="YamlDotNet" Version="15.1.0" />
-	</ItemGroup>
+		
+		<InternalsVisibleTo Include="Crest.Test" />
+		<InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
 
-	<ItemGroup>
 		<Content Include="config.yaml">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>

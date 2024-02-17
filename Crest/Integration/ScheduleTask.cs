@@ -1,10 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Quartz;
-using System.Runtime.CompilerServices;
-
-[assembly: InternalsVisibleTo("Crest.Test")]
-[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 
 namespace Crest.Integration
 {

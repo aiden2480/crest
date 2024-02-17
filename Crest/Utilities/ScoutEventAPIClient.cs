@@ -1,9 +1,5 @@
 ﻿using HtmlAgilityPack;
 using Quartz.Util;
-using System.Runtime.CompilerServices;
-
-[assembly: InternalsVisibleTo("Crest.Test")]
-[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 
 namespace Crest.Utilities
 {
