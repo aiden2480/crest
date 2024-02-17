@@ -1,4 +1,5 @@
 using Crest.Integration;
+using Crest.Test.Utilities;
 using Moq;
 using NUnit.Framework;
 
