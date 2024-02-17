@@ -35,7 +35,7 @@ public class ScoutEventCrawlerTaskTests : DeleteProgramDataBeforeTest
 	[Test]
 	public void TestSingularRegion_AllEventsPreviouslySeen()
 	{
-		var previouslySeenEvents = new List<int> { 123, 456, 789 };
+		var previouslySeenEvents = new List<int> { 123, 789 };
 
 		var taskConfig = new ScoutEventCrawlerTaskConfig()
 		{
@@ -81,6 +81,31 @@ public class ScoutEventCrawlerTaskTests : DeleteProgramDataBeforeTest
 		AssertJandiMessageIsSent(taskConfig, expectedJandiMessage, previouslySeenEvents);
 	}
 
+	[Test]
+	public void TestManyRegions_SomePreviouslySeenOrDuplicateEvents()
+	{
+		var previouslySeenEvents = new List<int> { 123, 134, 789 };
+
+		var taskConfig = new ScoutEventCrawlerTaskConfig()
+		{
+			JandiUrl = "https://jandiurl.com",
+			SubscribedRegions = { SubscribableRegion.sydney_north, SubscribableRegion.state, SubscribableRegion.south_metropolitan }
+		};
+
+		var expectedJandiMessage = new JandiMessage()
+		{
+			Body = "New ScoutLink events",
+			ConnectColor = "#84BC48",
+			ConnectInfo = new List<JandiConnect>
+			{
+				new() { Title = "⚜️ [Sydney North Region](https://events.nsw.scouts.com.au/region/sn)", Description = "[Canyoning](https://events.nsw.scouts.com.au/event/1178) • Open ✅\nOctober 20th" },
+				new() { Title = "⚜️ [Scouts NSW](https://events.nsw.scouts.com.au/state/nsw)", Description = "[Caving](https://events.nsw.scouts.com.au/event/1783) • Pending ⚠️\nNovember 4th" },
+			}
+		};
+
+		AssertJandiMessageIsSent(taskConfig, expectedJandiMessage, previouslySeenEvents);
+	}
+
 	#region Helpers
 
 	private static void AssertJandiMessageIsSent(ScoutEventCrawlerTaskConfig taskConfig, JandiMessage expectedJandiMessage, List<int> previouslySeenEvents)
@@ -98,14 +123,22 @@ public class ScoutEventCrawlerTaskTests : DeleteProgramDataBeforeTest
 
 		var mockSydneyNorthRegion = new Region("Sydney North Region", "https://events.nsw.scouts.com.au/region/sn", new List<Event>
 		{
-			new("Rock Climbing", 456, "Sunday 1st Jan to Monday 2nd Jan", "Closed", "danger"),
+			new("Rock Climbing", 456, "Sunday 1st Jan to Monday 2nd Jan", "Closed", "danger"), // none should have 456 because it is closed
 			new("Canyoning", 1178, "October 20th", "Open", "success"),
 		});
 
+		var mockStateRegion = new Region("Scouts NSW", "https://events.nsw.scouts.com.au/state/nsw", new List<Event>
+		{
+			new("Cycling", 134, "May 4th to May 5th", "Open", "success"),
+			new("Caving", 1783, "November 4th", "Pending", "warning"),
+			new("Diving", 1345, "April 21st", "Closed", "danger"), // none should have 1345 because it is closed
+		});
+
 		// Throw an error for any region not explicitly defined which it should do anyway
-		mockScoutEventClient.Setup(c => c.ScanRegion(It.IsAny<SubscribableRegion>())).Throws(new NotImplementedException("Test failure: Region has not been implemented"));
+		mockScoutEventClient.Setup(c => c.ScanRegion(It.IsAny<SubscribableRegion>())).Throws(new NotImplementedException("Test failure: Mock region has not been added"));
 		mockScoutEventClient.Setup(c => c.ScanRegion(SubscribableRegion.south_metropolitan)).Returns(mockSouthMetRegion);
 		mockScoutEventClient.Setup(c => c.ScanRegion(SubscribableRegion.sydney_north)).Returns(mockSydneyNorthRegion);
+		mockScoutEventClient.Setup(c => c.ScanRegion(SubscribableRegion.state)).Returns(mockStateRegion);
 
 		// Act
 		task.Run(taskConfig);
