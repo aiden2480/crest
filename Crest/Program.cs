@@ -1,72 +1,23 @@
-﻿using Crest.Extensions.TerrainApprovals;
-using Crest.Integration;
-using Newtonsoft.Json;
-using Quartz;
-using Quartz.Impl;
+﻿using Crest.Integration;
 using YamlDotNet.Core;
-using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
+using YamlDotNet.Serialization;
 
 namespace Crest
 {
 	public class Program
 	{
-		static async Task Main()
-		{
-			//LogProvider.SetCurrentLogProvider(new ConsoleLogProvider());
-
-			var appConfig = GetValidAppConfiguration();
-			var taskConfigs = new List<ITaskConfig>();
-
-			var schedulerFactory = new StdSchedulerFactory();
-			var scheduler = await schedulerFactory.GetScheduler();
-
-			await scheduler.Start();
-
-			foreach (var factory in ConfigFactories)
-			{
-				taskConfigs.AddRange(factory.GetValidConfigs(appConfig));
-			}
-
-			if (!taskConfigs.Any())
-			{
-				Console.WriteLine("No tasks scheduled, please check configuration");
-				return;
-			}
-
-			foreach (var task in taskConfigs)
-			{
-				var job = JobBuilder.Create()
-					.WithIdentity(task.TaskName, task.ExtensionName)
-					.OfType(task.JobRunnerType)
-					.UsingJobData("config", JsonConvert.SerializeObject(task))
-					.Build();
-
-				var trigger = TriggerBuilder.Create()
-					.WithIdentity(task.TaskName, task.ExtensionName)
-					.WithCronSchedule(task.CronSchedule)
-					.StartNow()
-					.Build();
-
-				await scheduler.ScheduleJob(job, trigger);
-
-				var nextFireTimeLocal = TimeZoneInfo.ConvertTimeFromUtc(trigger.GetNextFireTimeUtc().Value.DateTime, TimeZoneInfo.Local);
-				Console.WriteLine($"[{task.ExtensionName}] Scheduled job {task.TaskName} has next run {nextFireTimeLocal}");
-			}
-
-			await Task.Delay(-1);
-			await scheduler.Shutdown();
-		}
-
-		static IEnumerable<ITaskConfigFactory> ConfigFactories => new List<ITaskConfigFactory>()
-		{
-			new TerrainApprovalsTaskConfigFactory(),
-		};
-
-		public static ApplicationConfiguration GetValidAppConfiguration()
+		async static Task Main()
 		{
 			var configPath = "config.yaml";
+			var appConfig = GetValidAppConfiguration(configPath);
+			var crest = new Crest(appConfig);
 
+			await crest.RunForever();
+		}
+
+		public static ApplicationConfiguration GetValidAppConfiguration(string configPath)
+		{
 			if (!File.Exists(configPath))
 			{
 				throw new FileNotFoundException("You need to create a configuration file", configPath);
