@@ -1,11 +1,18 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Quartz;
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("Crest.Test")]
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 
 namespace Crest.Integration
 {
 	public abstract class ScheduleTask<TConfig> : IJob where TConfig : ITaskConfig
 	{
-		private IJobExecutionContext Context;
+		internal virtual IJobExecutionContext Context => _jobExecutionContext;
+
+		private IJobExecutionContext _jobExecutionContext;
 
 		/// <summary>
 		/// Runs just before <see cref="Run(TConfig)"/> and returns a bool indicating whether any further instances of this task should run.
@@ -23,7 +30,7 @@ namespace Crest.Integration
 
 		public Task Execute(IJobExecutionContext context)
 		{
-			Context = context;
+			_jobExecutionContext = context;
 
 			var configString = context.MergedJobDataMap.GetString("config");
 			var config = JsonConvert.DeserializeObject<TConfig>(configString);
@@ -46,17 +53,30 @@ namespace Crest.Integration
 
 		#region State
 
-		protected object GetState()
+		internal TState GetState<TState>(TState def = default)
 		{
-			var allState = GetAllState();
-			var key = Context.Trigger.Key.Group + "-" + Context.Trigger.Key.Name;
+			var allState = GetAllState<JToken>();
 
-			return allState.ContainsKey(key) ? allState[key] : new object();
+			var key = Context.Trigger.Key.Group + "-" + Context.Trigger.Key.Name;
+			
+			if (!allState.ContainsKey(key))
+			{
+				return def;
+			}
+
+			try
+			{
+				return allState[key].ToObject<TState>() ?? def;
+			}
+			catch (FormatException)
+			{
+				return def;
+			}
 		}
 
-		protected void SetState(object state)
+		internal void SetState<TState>(TState state)
 		{
-			var allState = GetAllState();
+			var allState = GetAllState<object>();
 			var key = Context.Trigger.Key.Group + "-" + Context.Trigger.Key.Name;
 
 			allState[key] = state;
@@ -66,19 +86,19 @@ namespace Crest.Integration
 			File.WriteAllText(StatePath, serialised);
 		}
 
-		private static Dictionary<string, object> GetAllState()
+		private Dictionary<string, TDeserialise> GetAllState<TDeserialise>()
 		{
 			if (!File.Exists(StatePath))
 			{
-				return new Dictionary<string, object>();
+				return new Dictionary<string, TDeserialise>();
 			}
 
 			var fileContents = File.ReadAllText(StatePath);
 
-			return JsonConvert.DeserializeObject<Dictionary<string, object>>(fileContents);
+			return JsonConvert.DeserializeObject<Dictionary<string, TDeserialise>>(fileContents);
 		}
 
-		static string StatePath
+		internal virtual string StatePath
 			=> Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "crest.programdata");
 
 		#endregion
