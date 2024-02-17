@@ -10,9 +10,7 @@ namespace Crest.Integration
 {
 	public abstract class ScheduleTask<TConfig> : IJob where TConfig : ITaskConfig
 	{
-		internal virtual IJobExecutionContext Context => _jobExecutionContext;
-
-		private IJobExecutionContext _jobExecutionContext;
+		private IJobExecutionContext Context;
 
 		/// <summary>
 		/// Runs just before <see cref="Run(TConfig)"/> and returns a bool indicating whether any further instances of this task should run.
@@ -30,7 +28,7 @@ namespace Crest.Integration
 
 		public Task Execute(IJobExecutionContext context)
 		{
-			_jobExecutionContext = context;
+			Context = context;
 
 			var configString = context.MergedJobDataMap.GetString("config");
 			var config = JsonConvert.DeserializeObject<TConfig>(configString);
@@ -57,16 +55,15 @@ namespace Crest.Integration
 		{
 			var allState = GetAllState<JToken>();
 
-			var key = Context.Trigger.Key.Group + "-" + Context.Trigger.Key.Name;
 			
-			if (!allState.ContainsKey(key))
+			if (!allState.ContainsKey(StateKey))
 			{
 				return def;
 			}
 
 			try
 			{
-				return allState[key].ToObject<TState>() ?? def;
+				return allState[StateKey].ToObject<TState>() ?? def;
 			}
 			catch (FormatException)
 			{
@@ -77,9 +74,7 @@ namespace Crest.Integration
 		internal void SetState<TState>(TState state)
 		{
 			var allState = GetAllState<object>();
-			var key = Context.Trigger.Key.Group + "-" + Context.Trigger.Key.Name;
-
-			allState[key] = state;
+			allState[StateKey] = state;
 
 			var serialised = JsonConvert.SerializeObject(allState);
 
@@ -100,6 +95,9 @@ namespace Crest.Integration
 
 		internal virtual string StatePath
 			=> Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "crest.programdata");
+
+		internal virtual string StateKey
+			=> Context.Trigger.Key.Group + "-" + Context.Trigger.Key.Name;
 
 		#endregion
 	}

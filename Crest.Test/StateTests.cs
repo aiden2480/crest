@@ -74,24 +74,12 @@ namespace Crest.Test
 		static ScheduleTask<TerrainApprovalsTaskConfig> GetMockScheduleTask(string jobName, string jobGroup)
 		{
 			var mock = new Mock<ScheduleTask<TerrainApprovalsTaskConfig>>();
-			var mockContext = GetMockContext(jobName, jobGroup);
+			var stateKey = $"{jobName}-{jobGroup}";
 
 			mock.SetupGet(m => m.StatePath).Returns(ProgramDataLocation);
-			mock.SetupGet(m => m.Context).Returns(mockContext);
+			mock.SetupGet(m => m.StateKey).Returns(stateKey);
 
 			return mock.Object;
-		}
-
-		static IJobExecutionContext GetMockContext(string jobName, string jobGroup)
-		{
-			var mockContext = new Mock<IJobExecutionContext>();
-			var mockTrigger = new Mock<ITrigger>();
-			var mockKey = new TriggerKey(jobName, jobGroup);
-
-			mockTrigger.SetupGet(t => t.Key).Returns(mockKey);
-			mockContext.SetupGet(c => c.Trigger).Returns(mockTrigger.Object);
-
-			return mockContext.Object;
 		}
 
 		#endregion
