@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34302.85
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Crest.Test", "Crest.Test\Crest.Test.csproj", "{FA84464C-CCD2-4868-B829-040E6D6AA0E3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Crest", "Crest\Crest.csproj", "{D25A5C9C-8EFA-4C93-BE1D-AEF81A665367}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FA84464C-CCD2-4868-B829-040E6D6AA0E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA84464C-CCD2-4868-B829-040E6D6AA0E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA84464C-CCD2-4868-B829-040E6D6AA0E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D25A5C9C-8EFA-4C93-BE1D-AEF81A665367}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D25A5C9C-8EFA-4C93-BE1D-AEF81A665367}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D25A5C9C-8EFA-4C93-BE1D-AEF81A665367}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D25A5C9C-8EFA-4C93-BE1D-AEF81A665367}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AE5BC5B5-6D99-44B6-A32A-3CCB6D033A37}
+	EndGlobalSection
+EndGlobal

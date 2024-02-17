@@ -1,0 +1,128 @@
+# This workflow will build and test a dotnet project in debug mode,
+# then publish in release mode and upload to GitHub Releases
+
+name: TestPublishRelease
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 6.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore --configuration Debug
+    - name: Test
+      run: dotnet test --no-build --verbosity normal
+
+  publish:
+    runs-on: ${{ matrix.os }}
+    
+    needs: test
+    if: ${{ success() && !github.event.pull_request }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        framework-dependency: [self-contained, framework-dependent]
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 6.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Publish
+      run: dotnet publish --configuration Release --self-contained ${{ matrix.framework-dependency == 'self-contained' && 'true' || 'false' }}
+    - name: Set variables
+      id: vars
+      shell: bash
+      run: |
+        os=$(echo "${{ matrix.os }}" | sed 's/-latest//')
+        echo "artifact_name=crest-${os}-${{ matrix.framework-dependency }}" >> $GITHUB_OUTPUT
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ steps.vars.outputs.artifact_name }}
+        path: ./Crest/bin/publish
+        if-no-files-found: error
+
+  release:
+    runs-on: ubuntu-latest
+
+    needs: publish
+    if: ${{ success() }}
+    
+    permissions:
+      contents: write
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Download artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts
+    - name: Set variables
+      id: vars
+      shell: bash
+      run: |
+        echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+        echo "release_tag=$(git log -n1 --format='%at' | xargs -I{} date -d @{} +%Y%m%d%H%M%S)" >> $GITHUB_OUTPUT
+
+        body=""
+        for commit in $(git rev-list ${{ github.event.before }}..HEAD); do
+          commit_msg=$(git show -s --no-color --pretty=format:%s $commit)
+          sha_short=$(git rev-parse --short $commit)
+
+          body+="<img src='app.ico' width='15' height='15'> "
+          body+="[$sha_short](https://github.com/${{ github.repository }}/commit/$commit)"
+          body+=" - $commit_msg"
+          body+=$'\n'
+        done
+
+        body="${body//'%'/'%25'}"
+        body="${body//$'\n'/'%0A'}"
+        body="${body//$'\r'/'%0D'}"
+
+        echo "commits_list=$body" >> $GITHUB_OUTPUT
+
+    - name: Zip Releases
+      shell: bash
+      run: |
+        for dir in artifacts/*/; do
+          zip_name=$(basename "${dir%/}")
+
+          zip -j "artifacts/${zip_name}.zip" "$dir"*
+        done
+
+    - name: Upload Release
+      uses: svenstaro/upload-release-action@2.7.0
+      with:
+        file: artifacts/*.zip
+        file_glob: true
+        tag: ${{ steps.vars.outputs.release_tag }}
+        release_name: Crest Release ${{ steps.vars.outputs.sha_short }}
+        body: |
+          ${{ steps.vars.outputs.commits_list }}
+
+          Downloads are available for windows and ubuntu. If dotnet 6.0 is not installed, download the larger self-contained asset, otherwise the smaller framework-dependent download will suffice
