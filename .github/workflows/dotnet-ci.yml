@@ -61,7 +61,7 @@ jobs:
       run: dotnet publish --configuration Release --self-contained ${{ matrix.framework-dependency == 'self-contained' && 'true' || 'false' }}
 
     - name: Code sign executables
-      if: matrix.os == 'windows-latest' && secrets.CERTIFICATE && secrets.CERTIFICATE_PASSWORD
+      if: matrix.os == 'windows-latest' && env.CERTIFICATE && env.CERTIFICATE_PASSWORD
       uses: dlemstra/code-sign-action@v1
       with:
         certificate: ${{ secrets.CERTIFICATE }}
