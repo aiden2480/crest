@@ -20,14 +20,18 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 6.0.x
+
     - name: Restore dependencies
       run: dotnet restore
+
     - name: Build
       run: dotnet build --no-restore --configuration Debug
+
     - name: Test
       run: dotnet test --no-build --verbosity normal
 
@@ -44,20 +48,34 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 6.0.x
+
     - name: Restore dependencies
       run: dotnet restore
+
     - name: Publish
       run: dotnet publish --configuration Release --self-contained ${{ matrix.framework-dependency == 'self-contained' && 'true' || 'false' }}
+
+    - name: Code sign executables
+      if: matrix.os == 'windows-latest'
+      uses: dlemstra/code-sign-action@v1
+      with:
+        certificate: ${{ secrets.CERTIFICATE }}
+        password: ${{ secrets.CERTIFICATE_PASSWORD }}
+        folder: ./Crest/bin/publish
+        description: Crest for Scouts Terrain
+
     - name: Set variables
       id: vars
       shell: bash
       run: |
         os=$(echo "${{ matrix.os }}" | sed 's/-latest//')
         echo "artifact_name=crest-${os}-${{ matrix.framework-dependency }}" >> $GITHUB_OUTPUT
+
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
@@ -78,10 +96,12 @@ jobs:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
+
     - name: Download artifacts
       uses: actions/download-artifact@v4
       with:
         path: artifacts
+
     - name: Set variables
       id: vars
       shell: bash
