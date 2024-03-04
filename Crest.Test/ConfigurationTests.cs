@@ -9,8 +9,8 @@ public class ConfigurationTests
 	public void TestErrorThrownIfConfigFileDoesNotExist()
 	{
 		var invalidFileLocation = "notconfig.yaml";
-		Assert.That(File.Exists(invalidFileLocation), Is.False);
-
+		Assert.That(File.Exists(invalidFileLocation), Is.False, $"Expected file to not exist: {invalidFileLocation}");
+		
 		var exception = Assert.Throws<FileNotFoundException>(() => Program.GetValidAppConfiguration(invalidFileLocation));
 		
 		Assert.Multiple(() =>
