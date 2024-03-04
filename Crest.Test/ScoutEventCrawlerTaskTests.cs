@@ -1,12 +1,12 @@
 ﻿using Crest.Extensions.TerrainApprovals;
 using Crest.Integration;
-using Crest.Test.Utilities;
+using Crest.TestUtilities;
 using Crest.Utilities;
 using Moq;
 using Newtonsoft.Json;
 using NUnit.Framework;
 
-namespace Crest.Test;
+namespace Crest;
 
 public class ScoutEventCrawlerTaskTests : DeleteProgramDataBeforeTest
 {

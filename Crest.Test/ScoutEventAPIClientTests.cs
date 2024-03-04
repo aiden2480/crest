@@ -3,7 +3,7 @@ using HtmlAgilityPack;
 using Moq;
 using NUnit.Framework;
 
-namespace Crest.Test;
+namespace Crest;
 
 public class ScoutEventAPIClientTests
 {

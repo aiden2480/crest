@@ -1,22 +1,14 @@
-﻿namespace Crest.Test.Utilities;
+﻿namespace Crest.TestUtilities;
 
 class TemporaryConfigFile : IDisposable
 {
 	public readonly string Filename;
 
-	public readonly string Contents;
-
 	public TemporaryConfigFile(string filename, string contents)
 	{
 		Filename = filename;
-		Contents = contents;
 
-		Setup();
-	}
-
-	void Setup()
-	{
-		File.WriteAllText(Filename, Contents);
+		File.WriteAllText(filename, contents);
 	}
 
 	public void Dispose()

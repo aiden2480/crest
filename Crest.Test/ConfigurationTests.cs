@@ -1,7 +1,7 @@
-using Crest.Test.Utilities;
+using Crest.TestUtilities;
 using NUnit.Framework;
 
-namespace Crest.Test;
+namespace Crest.Configuration;
 
 public class ConfigurationTests
 {
