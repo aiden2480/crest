@@ -1,4 +1,5 @@
 ﻿using Crest.Integration;
+using Crest.Utilities;
 
 namespace Crest.Extensions.TerrainApprovals;
 
@@ -15,16 +16,11 @@ class ScoutEventCrawlerTaskConfigFactory : ITaskConfigFactory
 		{
 			if (!taskConfig.SubscribedRegions.Any())
 			{
-				Console.WriteLine("This doesn't have any subscribed regions, whoops");
+				Logger.Warn("This task does not have any subscribed regions", taskConfig.TaskName);
 				continue;
 			}
 
 			yield return taskConfig;
 		}
-	}
-
-	private bool IsValid(ScoutEventCrawlerTaskConfig taskConfig)
-	{
-		return true;
 	}
 }

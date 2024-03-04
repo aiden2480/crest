@@ -1,6 +1,6 @@
 using NUnit.Framework;
 
-namespace Crest.Test.Utilities;
+namespace Crest.TestUtilities;
 
 public abstract class DeleteProgramDataBeforeTest
 {

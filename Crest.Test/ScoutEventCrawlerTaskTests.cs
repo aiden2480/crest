@@ -1,12 +1,12 @@
 ﻿using Crest.Extensions.TerrainApprovals;
 using Crest.Integration;
-using Crest.Test.Utilities;
+using Crest.TestUtilities;
 using Crest.Utilities;
 using Moq;
 using Newtonsoft.Json;
 using NUnit.Framework;
 
-namespace Crest.Test;
+namespace Crest;
 
 public class ScoutEventCrawlerTaskTests : DeleteProgramDataBeforeTest
 {
@@ -177,7 +177,7 @@ public class ScoutEventCrawlerTaskTests : DeleteProgramDataBeforeTest
 	private static void JandiCallback(string url, JandiMessage message)
 	{
 		var formattedMessage = JsonConvert.SerializeObject(message, Formatting.Indented);
-		Console.WriteLine($"SendMessage called for url {url}\nmessage {formattedMessage}");
+		Logger.Debug($"SendMessage called for url {url}\nmessage {formattedMessage}");
 	}
 
 	#endregion

@@ -1,7 +1,7 @@
-using Crest.Test.Utilities;
+using Crest.TestUtilities;
 using NUnit.Framework;
 
-namespace Crest.Test;
+namespace Crest.Configuration;
 
 public class ConfigurationTests
 {
@@ -9,11 +9,15 @@ public class ConfigurationTests
 	public void TestErrorThrownIfConfigFileDoesNotExist()
 	{
 		var invalidFileLocation = "notconfig.yaml";
-		Assert.That(File.Exists(invalidFileLocation), Is.False);
-
+		Assert.That(File.Exists(invalidFileLocation), Is.False, $"Expected file to not exist: {invalidFileLocation}");
+		
 		var exception = Assert.Throws<FileNotFoundException>(() => Program.GetValidAppConfiguration(invalidFileLocation));
-		Assert.That(exception.FileName, Is.EqualTo(invalidFileLocation));
-		Assert.That(exception.Message, Is.EqualTo($"You need to create a configuration file named {invalidFileLocation}"));
+		
+		Assert.Multiple(() =>
+		{
+			Assert.That(exception.FileName, Is.EqualTo(invalidFileLocation));
+			Assert.That(exception.Message, Is.EqualTo($"You need to create a configuration file named {invalidFileLocation}"));
+		});
 	}
 
 	[Test]

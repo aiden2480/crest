@@ -28,7 +28,7 @@ namespace Crest.Extensions.TerrainApprovals
 
 				if (!areTerrainCredentialsValid)
 				{
-					Console.WriteLine($"Error occurred for task '{taskConfig.TaskName}': " + loginFailureReason);
+					Logger.Warn($"Could not log into Terrain: " + loginFailureReason, taskConfig.TaskName);
 					continue;
 				}
 
@@ -37,7 +37,7 @@ namespace Crest.Extensions.TerrainApprovals
 
 				if (!isJandiWebhookUrlValid)
 				{
-					Console.WriteLine("Jandi URL matches expected url format but is invalid - has URL been set correctly?");
+					Logger.Warn("Jandi URL matches expected url format but is invalid - has URL been set correctly?", taskConfig.TaskName);
 					continue;
 				}
 
@@ -51,31 +51,31 @@ namespace Crest.Extensions.TerrainApprovals
 
 			if (new string[] { taskConfig.Username, taskConfig.Password, taskConfig.JandiUrl, taskConfig.CronSchedule }.Contains(null))
 			{
-				Console.WriteLine($"One of username, password, jandi_url, cron_schedule was not supplied for task {taskConfig.TaskName}, please check configuration");
+				Logger.Warn($"One of username, password, jandi_url, cron_schedule was not supplied, please check configuration", taskConfig.TaskName);
 				return false;
 			}
 
 			if (taskConfig.LookbackDays <= 0)
 			{
-				Console.WriteLine("lookback_days must be supplied and greater than zero");
+				Logger.Warn("lookback_days must be supplied and greater than zero", taskConfig.TaskName);
 				return false;
 			}
 
 			if (taskConfig.UnitId.Equals(Guid.Empty))
 			{
-				Console.WriteLine("unit_id must be supplied. This can be retrieved from the Terrain website");
+				Logger.Warn("unit_id must be supplied. This can be retrieved from the Terrain website", taskConfig.TaskName);
 				return false;
 			}
 
 			if (!UsernameRegex.IsMatch(taskConfig.Username))
 			{
-				Console.WriteLine($"Username is in an unexpected format: '{taskConfig.Username}'");
+				Logger.Warn($"Username is in an unexpected format: '{taskConfig.Username}'", taskConfig.TaskName);
 				valid = false;
 			}
 
 			if (!JandiWebhookRegex.IsMatch(taskConfig.JandiUrl))
 			{
-				Console.WriteLine($"Jandi URL is in an unexpected format: '{taskConfig.JandiUrl}'");
+				Logger.Warn($"Jandi URL is in an unexpected format: '{taskConfig.JandiUrl}'", taskConfig.TaskName);
 				valid = false;
 			}
 

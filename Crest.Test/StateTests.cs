@@ -1,9 +1,9 @@
 using Crest.Integration;
-using Crest.Test.Utilities;
+using Crest.TestUtilities;
 using Moq;
 using NUnit.Framework;
 
-namespace Crest.Test;
+namespace Crest.Utilities;
 
 public class StateTests : DeleteProgramDataBeforeTest
 {
@@ -57,9 +57,9 @@ public class StateTests : DeleteProgramDataBeforeTest
 		// Assert
 		Assert.That(task.GetState(expectedDefault), Is.EqualTo(expectedDefault));
 	}
-	
+
 	#region Helpers
-	
+
 	static ScheduleTask<TerrainApprovalsTaskConfig> GetMockScheduleTask(string jobName, string jobGroup)
 	{
 		var mock = new Mock<ScheduleTask<TerrainApprovalsTaskConfig>>();
