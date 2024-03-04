@@ -11,14 +11,14 @@ public class LoggerTests
 		var logFilePath = Path.GetFullPath($"crest-{fileSafeNow}.log");
 
 		using (new SuppressStdout())
-		using (var logger = Logger.Instance)
+		using (Logger.CreateNewInstance())
 		{
 			Assert.That(File.Exists(logFilePath), Is.True);
 
-			logger.Debug("debug");
-			logger.Info("information");
-			logger.Warn("warning");
-			logger.Error("error");
+			Logger.Debug("debug");
+			Logger.Info("information");
+			Logger.Warn("warning", "testCategory");
+			Logger.Error("error", "testCategory");
 		}
 
 		Assert.Multiple(() =>
@@ -26,22 +26,32 @@ public class LoggerTests
 			Assert.That(File.Exists(logFilePath), Is.True);
 
 			var logContents = File.ReadAllText(logFilePath).Split(Environment.NewLine);
-			Assert.That(logContents[0], Does.EndWith("[DEBUG] debug"));
-			Assert.That(logContents[1], Does.EndWith("[INFO]  information"));
-			Assert.That(logContents[2], Does.EndWith("[WARN]  warning"));
-			Assert.That(logContents[3], Does.EndWith("[ERROR] error"));
+			Assert.That(logContents[0], Does.EndWith("[DEBUG] | debug"));
+			Assert.That(logContents[1], Does.EndWith("[INFO]  | information"));
+			Assert.That(logContents[2], Does.EndWith("[WARN]  | testCategory -> warning"));
+			Assert.That(logContents[3], Does.EndWith("[ERROR] | testCategory -> error"));
 		});
 	}
 
 	[Test]
 	public void TestDisposingAndCreatingNewLoggerCreatesNewLogFile()
 	{
-		var initialLoggerFilePath = Logger.Instance.FilePath;
-		
-		Logger.Instance.Dispose();
+		string initialLoggerFilePath;
+		string finalLoggerFilePath;
+
+		using (Logger.CreateNewInstance())
+		{
+			initialLoggerFilePath = Logger.Instance.FilePath;
+		}
+
 		Thread.Sleep(1000);
 
-		Assert.That(Logger.Instance.FilePath, Is.Not.EqualTo(initialLoggerFilePath));
+		using (Logger.CreateNewInstance())
+		{
+			finalLoggerFilePath = Logger.Instance.FilePath;
+		}
+
+		Assert.That(finalLoggerFilePath, Is.Not.EqualTo(initialLoggerFilePath));
 	}
 }
 
