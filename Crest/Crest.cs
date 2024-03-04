@@ -1,5 +1,6 @@
 ﻿using Crest.Extensions.TerrainApprovals;
 using Crest.Integration;
+using Crest.Utilities;
 using Newtonsoft.Json;
 using Quartz;
 using Quartz.Impl;
@@ -17,6 +18,7 @@ public class Crest
 
 	public async Task RunForever()
 	{
+		using var logger = Logger.CreateNewInstance();
 		var taskConfigs = new List<ITaskConfig>();
 
 		var schedulerFactory = new StdSchedulerFactory();
@@ -31,19 +33,19 @@ public class Crest
 
 		if (!taskConfigs.Any())
 		{
-			Console.WriteLine("No tasks scheduled, please check configuration");
+			Logger.Error("No tasks scheduled, or all have been skipped due to invalid configuration");
 			return;
 		}
 
-		foreach (var task in taskConfigs)
+		foreach (var config in taskConfigs)
 		{
-			var job = BuildJobForTask(task);
-			var trigger = BuildTriggerForTask(task);
+			var job = BuildJobForTask(config);
+			var trigger = BuildTriggerForTask(config);
 
 			await scheduler.ScheduleJob(job, trigger);
 			var nextFireTimeLocal = TimeZoneInfo.ConvertTimeFromUtc(trigger.GetNextFireTimeUtc().Value.DateTime, TimeZoneInfo.Local);
 
-			Console.WriteLine($"[{task.ExtensionName}] Scheduled job {task.TaskName} has next run {nextFireTimeLocal}");
+			Logger.Info($"Newly scheduled job has next run {nextFireTimeLocal}", config.TaskName);
 		}
 
 		await Task.Delay(-1);

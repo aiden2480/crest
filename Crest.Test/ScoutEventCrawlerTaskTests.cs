@@ -177,7 +177,7 @@ public class ScoutEventCrawlerTaskTests : DeleteProgramDataBeforeTest
 	private static void JandiCallback(string url, JandiMessage message)
 	{
 		var formattedMessage = JsonConvert.SerializeObject(message, Formatting.Indented);
-		Console.WriteLine($"SendMessage called for url {url}\nmessage {formattedMessage}");
+		Logger.Debug($"SendMessage called for url {url}\nmessage {formattedMessage}");
 	}
 
 	#endregion

@@ -19,7 +19,7 @@ namespace Crest.Extensions.TerrainApprovals
 
 			if (!loginSucceeded)
 			{
-				Console.WriteLine(loginFailureReason);
+				Logger.Warn($"Terrain login has become invalid, please update credentials: {loginFailureReason}", config.TaskName);
 			}
 
 			return loginSucceeded;
