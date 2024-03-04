@@ -8,7 +8,7 @@ public sealed class Logger : IDisposable
 
 	private Logger()
 	{
-		var fileSafeNow = DateTime.Now.ToString("dd-MMM-yy-HHmmss");
+		var fileSafeNow = DateTime.Now.ToString("dd-MMM-yy-HHmmss").ToLower();
 		var logFilePath = Path.GetFullPath($"crest-{fileSafeNow}.log");
 
 		FilePath = Path.GetFullPath(logFilePath);

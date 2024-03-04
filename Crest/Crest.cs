@@ -48,6 +48,14 @@ public class Crest
 			Logger.Info($"Newly scheduled job has next run {nextFireTimeLocal}", config.TaskName);
 		}
 
+		Console.CancelKeyPress += delegate
+		{
+			Logger.Debug("Flushing log file from SIGINT", "logger");
+			logger.Dispose();
+
+			Environment.Exit(130); // SIGINT
+		};
+
 		await Task.Delay(-1);
 		await scheduler.Shutdown();
 	}
