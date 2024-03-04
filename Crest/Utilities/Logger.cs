@@ -12,7 +12,7 @@ public sealed class Logger : IDisposable
 		var logFilePath = Path.GetFullPath($"crest-{fileSafeNow}.log");
 
 		FilePath = Path.GetFullPath(logFilePath);
-		LogWriter = new StreamWriter(FilePath);
+		LogWriter = new StreamWriter(FilePath) { AutoFlush = true };
 	}
 
 	public void Dispose()
