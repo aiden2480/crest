@@ -7,9 +7,11 @@ public class LoggerTests
 	[Test]
 	public void TestLoggerCreatesFile_AndContentsFormatIsCorrect()
 	{
+		// Arrange
 		var fileSafeNow = DateTime.Now.ToString("dd-MMM-yy-HHmmss");
 		var logFilePath = Path.GetFullPath($"crest-{fileSafeNow}.log");
 
+		// Act
 		using (new SuppressStdout())
 		using (Logger.CreateNewInstance())
 		{
@@ -21,6 +23,7 @@ public class LoggerTests
 			Logger.Error("error", "testCategory");
 		}
 
+		// Assert
 		Assert.Multiple(() =>
 		{
 			Assert.That(File.Exists(logFilePath), Is.True);
@@ -36,9 +39,11 @@ public class LoggerTests
 	[Test]
 	public void TestDisposingAndCreatingNewLoggerCreatesNewLogFile()
 	{
+		// Arrange
 		string initialLoggerFilePath;
 		string finalLoggerFilePath;
 
+		// Act
 		using (Logger.CreateNewInstance())
 		{
 			initialLoggerFilePath = Logger.Instance.FilePath;
@@ -51,6 +56,7 @@ public class LoggerTests
 			finalLoggerFilePath = Logger.Instance.FilePath;
 		}
 
+		// Assert
 		Assert.That(finalLoggerFilePath, Is.Not.EqualTo(initialLoggerFilePath));
 	}
 }

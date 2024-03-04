@@ -49,10 +49,11 @@ public sealed class Logger : IDisposable
 			Debug("New instance was just created, this should not have happened", "logger");
 		}
 
-		var prefix = $"{DateTime.Now} [{severity}]".PadRight(31);
+		var dateTimeNow = DateTime.Now.ToString("dd-MMM-yy hh:mm:ss tt");
+		var severityFormatted = $"[{severity}]".PadRight(7);
 		var formattedMessage = string.IsNullOrEmpty(category)
-			? $"{prefix} | {message}"
-			: $"{prefix} | {category} -> {message}";
+			? $"{dateTimeNow} {severityFormatted} | {message}"
+			: $"{dateTimeNow} {severityFormatted} | {category} -> {message}";
 
 		lock (Instance.LogWriter)
 		{
