@@ -12,8 +12,12 @@ public class ConfigurationTests
 		Assert.That(File.Exists(invalidFileLocation), Is.False);
 
 		var exception = Assert.Throws<FileNotFoundException>(() => Program.GetValidAppConfiguration(invalidFileLocation));
-		Assert.That(exception.FileName, Is.EqualTo(invalidFileLocation));
-		Assert.That(exception.Message, Is.EqualTo($"You need to create a configuration file named {invalidFileLocation}"));
+		
+		Assert.Multiple(() =>
+		{
+			Assert.That(exception.FileName, Is.EqualTo(invalidFileLocation));
+			Assert.That(exception.Message, Is.EqualTo($"You need to create a configuration file named {invalidFileLocation}"));
+		});
 	}
 
 	[Test]
