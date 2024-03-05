@@ -32,8 +32,7 @@ namespace Crest.Extensions.TerrainApprovals
 					continue;
 				}
 
-				var jandiClient = new JandiAPIClient();
-				var isJandiWebhookUrlValid = jandiClient.IsValidIncomingWebhookURL(taskConfig.JandiUrl);
+				var isJandiWebhookUrlValid = JandiAPIClient.IsValidIncomingWebhookURL(taskConfig.JandiUrl);
 
 				if (!isJandiWebhookUrlValid)
 				{

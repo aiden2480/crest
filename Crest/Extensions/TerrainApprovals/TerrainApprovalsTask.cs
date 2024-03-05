@@ -27,8 +27,6 @@ namespace Crest.Extensions.TerrainApprovals
 
 		public override void Run(TerrainApprovalsTaskConfig config)
 		{
-			var jandiClient = new JandiAPIClient();
-
 			var pendingApprovals = TerrainClient.GetPendingApprovals(config.UnitId.ToString());
 			var finalisedApprovals = TerrainClient.GetFinalisedApprovals(config.UnitId.ToString())
 				.Where(a => (DateTime.Now - a.SubmissionDate).TotalDays <= config.LookbackDays)
@@ -40,8 +38,8 @@ namespace Crest.Extensions.TerrainApprovals
 			var pendingEmbed = GetJandiEmbed("Pending approval requests", "#FAC11B", "No pending approvals", pendingGroups);
 			var finalisedEmbed = GetJandiEmbed($"Approved in the last {config.LookbackDays} days", "#2ECC71", "No recent approvals", finalisedGroups);
 
-			jandiClient.SendMessage(config.JandiUrl, pendingEmbed);
-			jandiClient.SendMessage(config.JandiUrl, finalisedEmbed);
+			JandiAPIClient.SendMessage(config.JandiUrl, pendingEmbed);
+			JandiAPIClient.SendMessage(config.JandiUrl, finalisedEmbed);
 		}
 
 		Dictionary<string, string> GroupApprovals(IEnumerable<Approval> approvals)

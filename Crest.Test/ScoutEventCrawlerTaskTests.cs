@@ -111,7 +111,7 @@ public class ScoutEventCrawlerTaskTests : DeleteProgramDataBeforeTest
 	private static void AssertJandiMessageIsSent(ScoutEventCrawlerTaskConfig taskConfig, JandiMessage expectedJandiMessage, List<int> previouslySeenEvents)
 	{
 		// Arrange
-		CreateMocks(out var task, out var mockJandiClient, out var mockScoutEventClient);
+		CreateMocks(out var task, out var mockScoutEventClient);
 		task.SetState(previouslySeenEvents);
 
 		var mockSouthMetRegion = new Region("South Metropolitan Region", "https://events.nsw.scouts.com.au/region/sm", new List<Event>
@@ -134,51 +134,63 @@ public class ScoutEventCrawlerTaskTests : DeleteProgramDataBeforeTest
 			new("Diving", 1345, "April 21st", "Closed", "danger"), // none should have 1345 because it is closed
 		});
 
-		// Throw an error for any region not explicitly defined which it should do anyway
-		mockScoutEventClient.Setup(c => c.ScanRegion(It.IsAny<SubscribableRegion>())).Throws(new NotImplementedException("Test failure: Mock region has not been added"));
 		mockScoutEventClient.Setup(c => c.ScanRegion(SubscribableRegion.south_metropolitan)).Returns(mockSouthMetRegion);
 		mockScoutEventClient.Setup(c => c.ScanRegion(SubscribableRegion.sydney_north)).Returns(mockSydneyNorthRegion);
 		mockScoutEventClient.Setup(c => c.ScanRegion(SubscribableRegion.state)).Returns(mockStateRegion);
 
+		// Setup Asserts
+		int messagesSent = 0;
+
+		using var sendMessageOverride = new JandiAPISendMessageOverrideForTest((url, message) =>
+		{
+			Assert.Multiple(() =>
+			{
+				Assert.That(++messagesSent, Is.EqualTo(1));
+				Assert.That(url, Is.EqualTo(taskConfig.JandiUrl));
+				Assert.That(Serialise(message), Is.EqualTo(Serialise(expectedJandiMessage)));
+			});
+		});
+
 		// Act
 		task.Run(taskConfig);
-
-		// Assert
-		mockJandiClient.Verify(c => c.SendMessage(
-			taskConfig.JandiUrl,
-			It.Is((JandiMessage message) => Serialise(message) == Serialise(expectedJandiMessage))
-		), Times.Once);
 	}
 
 	private static void AssertJandiMessageIsSent(ScoutEventCrawlerTaskConfig taskConfig, JandiMessage expectedJandiMessage)
 		=> AssertJandiMessageIsSent(taskConfig, expectedJandiMessage, new List<int>());
 
-	private static void CreateMocks(out ScoutEventCrawlerTask task, out Mock<JandiAPIClient> mockJandiClient, out Mock<ScoutEventAPIClient> mockScoutEventClient, bool verbose = false)
+	private static void CreateMocks(out ScoutEventCrawlerTask task, out Mock<ScoutEventAPIClient> mockScoutEventClient)
 	{
-		mockScoutEventClient = new Mock<ScoutEventAPIClient>();
-		mockJandiClient = new Mock<JandiAPIClient>();
-		var mockTask = new Mock<ScoutEventCrawlerTask>(mockJandiClient.Object, mockScoutEventClient.Object) { CallBase = true };
+		mockScoutEventClient = new Mock<ScoutEventAPIClient>(behavior: MockBehavior.Strict);
+		var mockTask = new Mock<ScoutEventCrawlerTask>(mockScoutEventClient.Object) { CallBase = true };
 		task = mockTask.Object;
 
 		mockTask.SetupGet(m => m.StatePath).Returns(ProgramDataLocation);
 		mockTask.SetupGet(t => t.StateKey).Returns("taskName-ScoutEventCrawlerTask");
-
-		if (verbose)
-		{
-			mockJandiClient
-				.Setup(c => c.SendMessage(It.IsAny<string>(), It.IsAny<JandiMessage>()))
-				.Callback(JandiCallback);
-		}
 	}
 
 	private static string Serialise(JandiMessage message)
 		=> JsonConvert.SerializeObject(message);
 
-	private static void JandiCallback(string url, JandiMessage message)
+	#endregion
+}
+
+class JandiAPISendMessageOverrideForTest : IDisposable
+{
+	readonly Func<string, JandiMessage, HttpResponseMessage> InitialSendMessage;
+
+	public JandiAPISendMessageOverrideForTest(Action<string, JandiMessage> newFunc)
 	{
-		var formattedMessage = JsonConvert.SerializeObject(message, Formatting.Indented);
-		Logger.Debug($"SendMessage called for url {url}\nmessage {formattedMessage}");
+		InitialSendMessage = JandiAPIClient.SendMessage;
+		
+		JandiAPIClient.SendMessage = (url, message) =>
+		{
+			newFunc(url, message);
+			return null; 
+		};
 	}
 
-	#endregion
+	public void Dispose()
+	{
+		JandiAPIClient.SendMessage = InitialSendMessage;
+	}
 }

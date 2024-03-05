@@ -8,7 +8,9 @@ namespace Crest.Utilities;
 
 public class JandiAPIClient
 {
-	public virtual bool IsValidIncomingWebhookURL(string url)
+	#region Static Members
+
+	public static bool IsValidIncomingWebhookURL(string url)
 	{
 		var response = SendMessage(url, new JandiMessage());
 		var responseBody = response.Content.ReadAsStringAsync().Result;
@@ -17,7 +19,9 @@ public class JandiAPIClient
 			responseBody == "{\"code\":40052,\"msg\":\"Invalid payload - body\"}";
 	}
 
-	public virtual HttpResponseMessage SendMessage(string url, JandiMessage message)
+	public static Func<string, JandiMessage, HttpResponseMessage> SendMessage { get => sendMessage; internal set => sendMessage = value; }
+
+	private static Func<string, JandiMessage, HttpResponseMessage> sendMessage = (url, message) =>
 	{
 		var client = new HttpClient();
 		var request = new HttpRequestMessage(HttpMethod.Post, url)
@@ -29,7 +33,7 @@ public class JandiAPIClient
 		request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
 		return client.Send(request);
-	}
+	};
 
 	private static string SerialiseJandiMessage(JandiMessage message)
 	{
@@ -38,6 +42,8 @@ public class JandiAPIClient
 			ContractResolver = new CamelCasePropertyNamesContractResolver()
 		});
 	}
+
+	#endregion
 }
 
 public class JandiMessage
