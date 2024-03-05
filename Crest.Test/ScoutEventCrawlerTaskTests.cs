@@ -181,10 +181,11 @@ class JandiAPISendMessageOverrideForTest : IDisposable
 	public JandiAPISendMessageOverrideForTest(Action<string, JandiMessage> newFunc)
 	{
 		InitialSendMessage = JandiAPIClient.SendMessage;
-		
+
 		JandiAPIClient.SendMessage = (url, message) =>
 		{
-			newFunc(url, message);
+			newFunc.Invoke(url, message);
+
 			return null; 
 		};
 	}
