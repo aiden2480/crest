@@ -13,6 +13,8 @@ I have no idea what I'm doing. This is on GitHub for three reasons:
 - Changed the hex code of the colour sent to JANDI for the webhook to the Venturer red
 - There's also a folder called "Docker stuff" that you can `docker compose up --build` from if you `cd` into it, and it should work
 
+All else I can say is huge thanks to @aiden2480 for this. It's really helpful.
+
 # :mountain: crest
 <div align="center">
     <img src="https://img.shields.io/github/last-commit/aiden2480/crest?color=yellow" alt="Last commit" />
