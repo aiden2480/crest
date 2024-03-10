@@ -4,12 +4,11 @@
 		<TargetFramework>net6.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>disable</Nullable>
-		<PublishSingleFile>true</PublishSingleFile>
-		<PublishReadyToRun>true</PublishReadyToRun>
+		<PublishSingleFile>false</PublishSingleFile>
+		<PublishReadyToRun>false</PublishReadyToRun>
 		<DebugType>embedded</DebugType>
 		<DebugSymbols>false</DebugSymbols>
 		<PublishDir>bin/publish</PublishDir>
-		<ApplicationIcon>../app.ico</ApplicationIcon>
 	</PropertyGroup>
 	
 	<ItemGroup>
