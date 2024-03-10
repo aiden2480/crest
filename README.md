@@ -11,9 +11,9 @@ I have no idea what I'm doing. This is on GitHub for three reasons:
 - Removed the `.csproj` file's reference to the app icon, because Docker didn't like it
 - Changed the demo YAML file so it's just the ScoutEvent crawler (you can change this back)
 - Changed the hex code of the colour sent to JANDI for the webhook to the Venturer red
-- There's also a folder called "Docker stuff" that you can `docker compose up --build` from if you `cd` into it, and it should work
+- There's also a folder called "Docker stuff" that you can `docker compose up --build` from if you `cd` into it, and it should work (note to self: command may be `sudo docker-compose up --build` on some Docker distributions.
 
-All else I can say is huge thanks to @aiden2480 for this. It's really helpful.
+All else I can say is huge thanks to @aiden2480 for this. It's really helpful, amazing work.
 
 # :mountain: crest
 <div align="center">
