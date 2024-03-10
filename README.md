@@ -1,3 +1,16 @@
+# Docker port of Crest
+
+I have no idea what I'm doing. This is on GitHub for three reasons:
+- It lets me pull changes from the original to my Docker setup
+- It gives me a file backup
+- I feel like I'm contributing to the world when I publish even the tiniest little things on GitHub.
+
+**So what's changed in this fork?**
+Changed some boolean values in the main `.csproj` file because Docker didn't like them
+Removed the `.csproj` file's reference to the app icon, because Docker didn't like it
+Changed the demo YAML file so it's just the ScoutEvent crawler (you can change this back)
+Changed the hex code of the colour sent to JANDI for the webhook to the Venturer red
+There's also a folder called "Docker stuff" that you can `docker compose up --build` from if you `cd` into it, and it should work
 
 # :mountain: crest
 <div align="center">
