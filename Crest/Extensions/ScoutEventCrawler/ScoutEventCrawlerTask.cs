@@ -33,7 +33,7 @@ public class ScoutEventCrawlerTask : ScheduleTask<ScoutEventCrawlerTaskConfig>
 	{
 		var message = new JandiMessage
 		{
-			Body = "New ScoutLink events",
+			Body = "New listings on ScoutEvent",
 			ConnectColor = "#99002b",
 		};
 
