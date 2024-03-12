@@ -72,7 +72,7 @@ Download and unzip the [latest release](https://github.com/aiden2480/crest/relea
 assetname="crest-ubuntu-self-contained.zip"
 
 tag=$(curl -s "https://api.github.com/repos/aiden2480/crest/releases/latest" | grep -o '"tag_name": ".*"' | cut -d'"' -f4)
-download_url="https://github.com/$repo/releases/download/$tag/$assetname"
+download_url="https://github.com/aiden2480/crest/releases/download/$tag/$assetname"
 
 if [ -z "$tag" ]; then
     echo "Error: Unable to retrieve latest release tag from GitHub"
