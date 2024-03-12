@@ -16,6 +16,11 @@ public class ScoutEventAPIClient
 		var regionName = doc.DocumentNode.SelectSingleNode("//h1").InnerText.Trim();
 		var eventTables = doc.DocumentNode.SelectNodes("//a[starts-with(@href, '/event/') and .//table[contains(@class, 'events')]]");
 
+		if (eventTables is null)
+		{
+			return new Region(regionName, regionUrl, events);
+		}
+
 		foreach (var eventTable in eventTables)
 		{
 			var aTag = eventTable.SelectSingleNode(".//a");

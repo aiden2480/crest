@@ -61,6 +61,30 @@ public class ScoutEventAPIClientTests
 		});
 	}
 
+	[Test]
+	public void TestDoesNotThrowWhenThereAreNoEvents()
+	{
+		// Arrange
+		var document = new HtmlDocument();
+		var mockClient = new Mock<ScoutEventAPIClient> { CallBase = true };
+		var client = mockClient.Object;
+
+		document.Load("TestFiles/ScoutEventNoEvents.html");
+		mockClient.Setup(c => c.GetHtmlDocument(It.IsAny<string>())).Returns(document);
+
+		// Act
+		var region = client.ScanRegion(SubscribableRegion.swash);
+
+		// Assert
+		Assert.Multiple(() =>
+		{
+			Assert.That(region, Is.Not.Null);
+			Assert.That(region.Name, Is.EqualTo("Water Activities Centre"));
+			Assert.That(region.Link, Is.EqualTo("https://events.nsw.scouts.com.au/region/water-activities-centre"));
+			Assert.That(region.Events, Has.Count.EqualTo(0));
+		});
+	}
+
 	[TestCaseSource(nameof(Branches))]
 	public void TestLiveBranchUrl(SubscribableRegion regionEnum, string regionName, string regionUrl)
 	{
