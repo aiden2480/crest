@@ -21,7 +21,7 @@ public class ScoutEventCrawlerTaskTests : DeleteProgramDataBeforeTest
 
 		var expectedJandiMessage = new JandiMessage()
 		{
-			Body = "New ScoutLink events",
+			Body = "New ScoutEvent listings",
 			ConnectColor = "#84BC48",
 			ConnectInfo = new List<JandiConnect>
 			{
@@ -45,7 +45,7 @@ public class ScoutEventCrawlerTaskTests : DeleteProgramDataBeforeTest
 
 		var expectedJandiMessage = new JandiMessage()
 		{
-			Body = "New ScoutLink events",
+			Body = "New ScoutEvent listings",
 			ConnectColor = "#84BC48",
 			ConnectInfo = new List<JandiConnect>
 			{
@@ -69,7 +69,7 @@ public class ScoutEventCrawlerTaskTests : DeleteProgramDataBeforeTest
 
 		var expectedJandiMessage = new JandiMessage()
 		{
-			Body = "New ScoutLink events",
+			Body = "New ScoutEvent listings",
 			ConnectColor = "#84BC48",
 			ConnectInfo = new List<JandiConnect>
 			{
@@ -94,7 +94,7 @@ public class ScoutEventCrawlerTaskTests : DeleteProgramDataBeforeTest
 
 		var expectedJandiMessage = new JandiMessage()
 		{
-			Body = "New ScoutLink events",
+			Body = "New ScoutEvent listings",
 			ConnectColor = "#84BC48",
 			ConnectInfo = new List<JandiConnect>
 			{
