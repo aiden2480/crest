@@ -5,17 +5,14 @@ namespace Crest.Extensions.TerrainApprovals;
 
 public class ScoutEventCrawlerTask : ScheduleTask<ScoutEventCrawlerTaskConfig>
 {
-	internal readonly JandiAPIClient JandiClient;
-
 	internal readonly ScoutEventAPIClient ScoutEventClient;
 
-	internal ScoutEventCrawlerTask(JandiAPIClient jandiClient, ScoutEventAPIClient scoutEventClient)
+	internal ScoutEventCrawlerTask(ScoutEventAPIClient scoutEventClient)
 	{
-		JandiClient = jandiClient;
 		ScoutEventClient = scoutEventClient;
 	}
 
-	public ScoutEventCrawlerTask() : this(new JandiAPIClient(), new ScoutEventAPIClient()) { }
+	public ScoutEventCrawlerTask() : this(new ScoutEventAPIClient()) { }
 
 	public override void Run(ScoutEventCrawlerTaskConfig config)
 	{
@@ -24,12 +21,12 @@ public class ScoutEventCrawlerTask : ScheduleTask<ScoutEventCrawlerTaskConfig>
 			.ToList();
 		var seenIDs = GetState(def: new List<int>());
 
-		JandiClient.SendMessage(config.JandiUrl, GetJandiMessage(regions, seenIDs));
+		JandiAPIClient.SendMessage(config.JandiUrl, GetJandiMessage(regions, seenIDs));
 		
 		SetState(seenIDs);
 	}
 
-	internal JandiMessage GetJandiMessage(List<Region> regions, List<int> seenIDs)
+	internal static JandiMessage GetJandiMessage(List<Region> regions, List<int> seenIDs)
 	{
 		var message = new JandiMessage
 		{

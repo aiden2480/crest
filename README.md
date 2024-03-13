@@ -67,31 +67,45 @@ scout_event_crawler:
 Download and unzip the [latest release](https://github.com/aiden2480/crest/releases/latest) and run the executable. The bash script below will do the same. If you have dotnet 6.0 installed then you can download the smaller framework-dependent file, otherwise the self-contained version must be used. 
 
 ```bash
-# Check the Releases tab for a more suitable asset
-release_asset="crest-ubuntu-self-contained.zip"
+#!/bin/bash
+
+assetname="crest-ubuntu-self-contained.zip"
 
 tag=$(curl -s "https://api.github.com/repos/aiden2480/crest/releases/latest" | grep -o '"tag_name": ".*"' | cut -d'"' -f4)
+download_url="https://github.com/aiden2480/crest/releases/download/$tag/$assetname"
+
 if [ -z "$tag" ]; then
-    echo "Error: Unable to retrieve latest release tag."
+    echo "Error: Unable to retrieve latest release tag from GitHub"
     exit 1
 fi
 
-download_url="https://github.com/aiden2480/crest/releases/download/$tag/$release_asset"
-echo "Downloading from $download_url"
+tempfile=$(mktemp)
+tempdir=$(mktemp -d)
 
-response=$(curl -sL -w "%{http_code}" -o $release_asset "$download_url")
+echo "Downloading latest zip asset from $download_url to $tempfile"
+response=$(curl -sL -w "%{http_code}" -o $tempfile "$download_url")
 
 if [ "$response" != "200" ]; then
     echo "Error: Failed to download release asset. HTTP status code: $response"
     exit 1
 fi
 
-echo "Download completed successfully. Extracting..."
-unzip -oq $release_asset -d ./
-rm $release_asset
-echo "Unzipped successfully"
+echo "Download completed successfully. Extracting to $tempdir"
+unzip -oq $tempfile -d $tempdir
 
+mv $tempdir/Crest Crest
 chmod u+x Crest
+
+if ! [ -f "config.yaml" ]; then
+    echo "Copying sample config.yaml file. Update the file with your config then run Crest"
+    mv $tempdir/config.yaml config.yaml
+    exit 0
+fi
+
+echo ""
+
+# Run the program directly, or setup a screen session
+./Crest
 ```
 
 ## :camera_flash: Program screenshots
