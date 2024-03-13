@@ -4,6 +4,7 @@ using Crest.Utilities;
 using Newtonsoft.Json;
 using Quartz;
 using Quartz.Impl;
+using static Quartz.Logging.LogProvider;
 
 namespace Crest;
 
@@ -18,7 +19,15 @@ public class Crest
 
 	public async Task RunForever()
 	{
+		// Logging
 		using var logger = Logger.CreateNewInstance();
+
+		if (AppConfig.DebugMode)
+		{
+			SetCurrentLogProvider(new ConsoleLogProvider());
+		}
+
+		// Get config objects
 		var taskConfigs = new List<ITaskConfig>();
 
 		var schedulerFactory = new StdSchedulerFactory();
@@ -37,6 +46,7 @@ public class Crest
 			return;
 		}
 
+		// Schedule jobs in Quartz
 		foreach (var config in taskConfigs)
 		{
 			var job = BuildJobForTask(config);
@@ -48,6 +58,7 @@ public class Crest
 			Logger.Info($"Newly scheduled job has next run {nextFireTimeLocal}", config.TaskName);
 		}
 
+		// Run forever
 		await Task.Delay(-1);
 		await scheduler.Shutdown();
 	}

@@ -40,8 +40,12 @@ namespace Crest.Extensions.TerrainApprovals
 			var pendingEmbed = GetJandiEmbed("Pending approval requests", "#FAC11B", "No pending approvals", pendingGroups);
 			var finalisedEmbed = GetJandiEmbed($"Approved in the last {config.LookbackDays} days", "#2ECC71", "No recent approvals", finalisedGroups);
 
+			Logger.Info($"Found {pendingApprovals.Count()} pending approvals", config.TaskName);
+			Logger.Info($"Found {finalisedApprovals.Count()} finalised approvals from the last {config.LookbackDays} days", config.TaskName);
+
 			jandiClient.SendMessage(config.JandiUrl, pendingEmbed);
 			jandiClient.SendMessage(config.JandiUrl, finalisedEmbed);
+			Logger.Info("Posted to Jandi topic", config.TaskName);
 		}
 
 		Dictionary<string, string> GroupApprovals(IEnumerable<Approval> approvals)
