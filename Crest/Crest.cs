@@ -19,9 +19,15 @@ public class Crest
 
 	public async Task RunForever()
 	{
+		// Logging
 		using var logger = Logger.CreateNewInstance();
-		SetCurrentLogProvider(new ConsoleLogProvider());
 
+		if (AppConfig.DebugMode)
+		{
+			SetCurrentLogProvider(new ConsoleLogProvider());
+		}
+
+		// Get config objects
 		var taskConfigs = new List<ITaskConfig>();
 
 		var schedulerFactory = new StdSchedulerFactory();
@@ -40,6 +46,7 @@ public class Crest
 			return;
 		}
 
+		// Schedule jobs in Quartz
 		foreach (var config in taskConfigs)
 		{
 			var job = BuildJobForTask(config);
@@ -51,6 +58,7 @@ public class Crest
 			Logger.Info($"Newly scheduled job has next run {nextFireTimeLocal}", config.TaskName);
 		}
 
+		// Run forever
 		await Task.Delay(-1);
 		await scheduler.Shutdown();
 	}

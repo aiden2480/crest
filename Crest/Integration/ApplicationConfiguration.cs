@@ -6,6 +6,11 @@ namespace Crest.Integration;
 public class ApplicationConfiguration
 {
 	/// <summary>
+	/// Enable debug logging mode
+	/// </summary>
+	public bool DebugMode = false;
+
+	/// <summary>
 	/// Configuration for the TerrainApprovalsTask extension
 	/// </summary>
 	public ExtensionConfiguration<TerrainApprovalsTaskConfig> TerrainApprovals;
