@@ -41,7 +41,7 @@ public sealed class Logger : IDisposable
 	public static void Error(string message, string category = null)
 		=> AddLog("ERROR", message, category);
 
-	static void AddLog(string severity, string message, string category)
+	internal static void AddLog(string severity, string message, string category)
 	{
 		if (Instance == null)
 		{

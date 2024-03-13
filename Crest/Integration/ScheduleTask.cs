@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Crest.Utilities;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Quartz;
 
@@ -31,11 +32,14 @@ public abstract class ScheduleTask<TConfig> : IJob where TConfig : ITaskConfig
 
 		if (!ShouldRun(config))
 		{
+			Logger.Info("ShouldRun returned false so all future instances of this task have been suspended", config.TaskName);
 			CancelFutureTriggersForThisTask();
 			return Task.CompletedTask;
 		}
 
+		Logger.Info("Executing next scheduled occurrence", config.TaskName);
 		Run(config);
+
 		return Task.CompletedTask;
 	}
 
@@ -51,7 +55,7 @@ public abstract class ScheduleTask<TConfig> : IJob where TConfig : ITaskConfig
 	{
 		var allState = GetAllState<JToken>();
 
-		
+
 		if (!allState.ContainsKey(StateKey))
 		{
 			return def;

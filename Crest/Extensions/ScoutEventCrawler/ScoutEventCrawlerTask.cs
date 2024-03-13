@@ -22,10 +22,14 @@ public class ScoutEventCrawlerTask : ScheduleTask<ScoutEventCrawlerTaskConfig>
 		var regions = config.SubscribedRegions
 			.Select(r => ScoutEventClient.ScanRegion(r))
 			.ToList();
-		var seenIDs = GetState(def: new List<int>());
 
+		var seenIDs = GetState(def: new List<int>());
+		var cumulativeEventsCount = regions.Sum(r => r.Events.Count);
+
+		Logger.Info($"Successfully scanned {cumulativeEventsCount} events in {regions.Count} regions", config.TaskName);
 		JandiClient.SendMessage(config.JandiUrl, GetJandiMessage(regions, seenIDs));
-		
+		Logger.Info("Posed to Jandi topic", config.TaskName);
+
 		SetState(seenIDs);
 	}
 

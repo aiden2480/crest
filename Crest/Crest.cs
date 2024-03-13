@@ -4,6 +4,7 @@ using Crest.Utilities;
 using Newtonsoft.Json;
 using Quartz;
 using Quartz.Impl;
+using static Quartz.Logging.LogProvider;
 
 namespace Crest;
 
@@ -19,6 +20,8 @@ public class Crest
 	public async Task RunForever()
 	{
 		using var logger = Logger.CreateNewInstance();
+		SetCurrentLogProvider(new ConsoleLogProvider());
+
 		var taskConfigs = new List<ITaskConfig>();
 
 		var schedulerFactory = new StdSchedulerFactory();
